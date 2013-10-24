@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="C:/javacv-bin/javacpp.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/javacv-bin/javacv.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/javacv-bin/javacv-windows-x86.jar"/>
+	<classpathentry exported="true" kind="lib" path="c:/javacv-bin/Tess4J/dist/tess4j.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

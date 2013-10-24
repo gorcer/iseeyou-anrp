@@ -1,0 +1,6 @@
+http://robocraft.ru/blog/computervision/264.html
+http://habrahabr.ru/post/174703/
+http://habrahabr.ru/post/123395/
+http://code.google.com/p/javacv/wiki/ConvertingOpenCV
+http://opencv.willowgarage.com/documentation/genindex.html
+http://recog.ru/page/library/opencv

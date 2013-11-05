@@ -260,7 +260,62 @@ public class Anrp {
 	  //   System.out.println("No squares");
 	}
 	
+	public static void testImage()
+	{
+		 Vector<CvSeq> squares;
+		 final IplImage image = cvLoadImage("Images/Test2.jpg");
+		 IplImage dst;
+		 
+		 final CanvasFrame original = new CanvasFrame("Ori");		 
+		 dst = cvCloneImage(image);
+          
+		 squares = Recognizer.findNumbers(dst);		
+		 drawSquares(dst, dst, squares);
+						
+		 original.showImage(dst);			
+		 original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
+	}
+	
+	public static void testVideo()
+	{
+		 IplImage dst;
+	
+		CvCapture capture = cvCreateFileCapture("test.avi");
+		IplImage frame;
+		Vector<CvSeq> squares;
+		
+		cvSetCaptureProperty(capture, CV_CAP_PROP_POS_FRAMES, 4700);
+		final CanvasFrame original = new CanvasFrame("Ori");
+		
+		while(true){
+			frame = cvQueryFrame( capture ); 
+			if(frame == null) {
+                break;
+			}
+			
+		     dst = cvCloneImage(frame);
+
+		     dst = cvCreateImage( cvSize(frame.width()/1, frame.height()/1), frame.depth(), frame.nChannels() );
+             cvResize(frame, dst, frame.nChannels());
+             
+             squares = Recognizer.findNumbers(dst);
+ 			
+ 			drawSquares(dst, dst, squares);
+ 			
+ 			
+ 			
+ 			original.showImage(dst);
+			//smooth.showImage(gray);
+			original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
+			
+		}
+	}
+	
 	public static void main(String[] args) {
+		testImage();
+	}
+	
+	public static void main2(String[] args) {
 		
 		 CvSeq contours = new CvSeq(null);
 		 CvMemStorage storage = CvMemStorage.create();

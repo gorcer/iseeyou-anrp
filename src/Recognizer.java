@@ -161,13 +161,14 @@ public class Recognizer {
                         		 ){
                         	 		cn++;
                         	 		
-                        	 		 RecognizeNumber(Transform(rect, approx, original, cn));
+                        	 		img = Transform(rect, approx, original, cn);
+                        	 		 //RecognizeNumber(Transform(rect, approx, original, cn));
 		                        	 
 		                        	 
 		                        //	 System.out.println("("+rect.x()+" , "+rect.y()+") -> Width : "+rect.width()+" Height : "+rect.height()+" div="+(Math.abs(((float)rect.height()/rect.width()))));
 		                       //      System.out.println("Params = thresh:"+config.Thresh);
 		
-		                             //cvSaveImage("tmp/ok-"+config.thresh+".jpg",   img);
+		                             
 		                             //cvSeqPush(squares, approx);
 		                             squares.add(approx);
 		                             
@@ -191,7 +192,7 @@ public class Recognizer {
 		Tesseract instance = Tesseract.getInstance(); // JNA Interface Mapping
         // Tesseract1 instance = new Tesseract1(); // JNA Direct Mapping
 		
-		
+		/*
 		TessBaseAPI myOCR = new TessBaseAPI();
 		
 		
@@ -200,7 +201,7 @@ public class Recognizer {
 			    exit(1);
 			  }
 		  
-		
+		*/
 		File fn = new File("tmp/afine102.tif");
 		System.out.println(fn);
 		

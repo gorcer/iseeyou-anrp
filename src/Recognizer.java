@@ -207,7 +207,7 @@ public class Recognizer {
 
 	        try {
 	            String result = instance.doOCR(imageFile);
-	            System.out.println(result);
+	            System.out.println("num:"+result);
 	        } catch (TesseractException e) {
 	            System.err.println(e.getMessage());
 	        }

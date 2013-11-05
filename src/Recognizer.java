@@ -5,13 +5,11 @@ import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 
 
 
-import java.awt.image.BufferedImage;
+
 import java.io.File;
 import java.util.Vector;
 
-import net.sourceforge.tess4j.TessAPI.TessBaseAPI;
-import net.sourceforge.tess4j.Tesseract;
-import net.sourceforge.tess4j.TesseractException;
+import net.sourceforge.tess4j.*;
 
 
 import com.googlecode.javacpp.*;
@@ -187,9 +185,9 @@ public class Recognizer {
 		return squares; 
 	}
 	
-	private static void RecognizeNumber(IplImage src) {
+	public static String RecognizeNumber(IplImage src) {
 		// TODO Auto-generated method stub
-		Tesseract instance = Tesseract.getInstance(); // JNA Interface Mapping
+		//Tesseract instance = Tesseract.getInstance(); // JNA Interface Mapping
         // Tesseract1 instance = new Tesseract1(); // JNA Direct Mapping
 		
 		/*
@@ -202,15 +200,19 @@ public class Recognizer {
 			  }
 		  
 		*/
-		File fn = new File("tmp/afine102.tif");
-		System.out.println(fn);
-		
-        try {
-            String result = instance.doOCR(fn);
-            System.out.println("Recognize "+result);
-        } catch (TesseractException e) {
-            System.err.println(e.getMessage());
-        }
+		System.setProperty("jna.library.path", "c:/javacv-bin/Tess4J/");
+		File imageFile = new File("Images/test_plate.tif");		 
+	        Tesseract instance = Tesseract.getInstance();  // JNA Interface Mapping
+	         //Tesseract1 instance = new Tesseract1(); // JNA Direct Mapping
+
+	        try {
+	            String result = instance.doOCR(imageFile);
+	            System.out.println(result);
+	        } catch (TesseractException e) {
+	            System.err.println(e.getMessage());
+	        }
+        
+        return "test";
 	}
 
 

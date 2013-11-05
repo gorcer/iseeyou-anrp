@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="src">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="Tess4J"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="C:/javacv-bin/javacpp.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/javacv-bin/javacv.jar"/>
 	<classpathentry exported="true" kind="lib" path="C:/javacv-bin/javacv-windows-x86.jar"/>
-	<classpathentry exported="true" kind="lib" path="c:/javacv-bin/Tess4J/dist/tess4j.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/javacv-bin/Tess4J/dist/tess4j.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Tess4J"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

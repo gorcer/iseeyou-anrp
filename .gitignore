@@ -6,3 +6,4 @@
 *.ear
 tmp/*
 *.avi
+*.log

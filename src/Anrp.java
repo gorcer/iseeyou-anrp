@@ -276,6 +276,8 @@ public class Anrp {
 		 original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
 	}
 	
+	
+	
 	public static void testVideo()
 	{
 		 IplImage dst;
@@ -311,8 +313,24 @@ public class Anrp {
 		}
 	}
 	
+	public static void testImageOCR()
+	{
+		 Vector<CvSeq> squares;
+		 final IplImage image = cvLoadImage("Images/test_plate.jpg");
+		 String number;
+		 
+		 final CanvasFrame original = new CanvasFrame("Ori");		 
+		 
+          
+		 number = Recognizer.RecognizeNumber(image);		
+		 
+						
+		 original.showImage(image);			
+		 original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
+	}
+	
 	public static void main(String[] args) {
-		testImage();
+		testImageOCR();
 	}
 	
 	public static void main2(String[] args) {

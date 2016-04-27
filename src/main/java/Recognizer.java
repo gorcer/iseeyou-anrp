@@ -1,26 +1,18 @@
-import static com.googlecode.javacv.cpp.opencv_core.*;
-import static com.googlecode.javacv.cpp.opencv_highgui.*;
-import static com.googlecode.javacv.cpp.opencv_imgproc.*;
-
-
-
-
-
 import java.io.File;
 import java.util.Vector;
 
-import net.sourceforge.tess4j.*;
+/*import net.sourceforge.tess4j.*;*/
 
+import org.bytedeco.javacv.*;
+import org.bytedeco.javacpp.*;
+import org.bytedeco.javacpp.opencv_videoio.CvCapture;
 
-import com.googlecode.javacpp.*;
-import com.googlecode.javacv.JavaCV;
-import com.googlecode.javacv.cpp.opencv_core.CvMat;
-import com.googlecode.javacv.cpp.opencv_core.CvPoint;
-import com.googlecode.javacv.cpp.opencv_core.CvRect;
-import com.googlecode.javacv.cpp.opencv_core.CvSeq;
-import com.googlecode.javacv.cpp.opencv_core.CvSize;
-import com.googlecode.javacv.cpp.opencv_core.IplImage;
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
+import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
+import static org.bytedeco.javacpp.tesseract.*;
+import static org.bytedeco.javacpp.lept.*;
 
 public class Recognizer {
 
@@ -88,7 +80,7 @@ public class Recognizer {
 		
 		
 		double[] srcArr = new double[8];		
-		// Переводим полигон в массив (необходимо унифицировать направление)
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 		for(int j = 0; j < 4 ; j ++  )
 	    {
     		srcArr[j*2]=(int)pts.get(j).x()-rect.x();
@@ -125,23 +117,23 @@ public class Recognizer {
 		
 		
 		int cn=config.n;
-		// Перебираем контуры
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		while (contours != null && !contours.isNull()) 
 		{
 			
-			//Если точек в контуре > 0
+			//пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ > 0
 			if (contours.elem_size() > 0) 
 			{
                 approx = cvApproxPoly(contours, Loader.sizeof(CvContour.class),storage, CV_POLY_APPROX_DP, cvContourPerimeter(contours)*config.ApproxAccuracy, 0);
                
-                if( approx.total() == 4 // Четыре стороны
+                if( approx.total() == 4 // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                         &&
                         Math.abs(cvContourArea(approx, CV_WHOLE_SEQ, 0)) > config.minContourArea &&
-                    cvCheckContourConvexity(approx) != 0 // контур замкнут
+                    cvCheckContourConvexity(approx) != 0 // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                     )
                 {
                 	 maxCosine = 0;
-                	 // Перебираем все углы
+                	 // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
                 	 for( int j = 2; j < 5; j++ )
                      {
                 		// find the maximum cosine of the angle between joint edges
@@ -152,10 +144,10 @@ public class Recognizer {
                          CvRect rect=cvBoundingRect(approx, 1);
                          
                          if((
-                        		 rect.width()*rect.height())<config.maxSquare // Макс площадь
-                        		 && rect.width()>rect.height()  // Ширина больше высоты
+                        		 rect.width()*rect.height())<config.maxSquare // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+                        		 && rect.width()>rect.height()  // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
                         		 /*&& Math.abs(((float)x.height()/x.width())-config.maxAspectRatio)<0.1*/ 
-                        		 && (rect.width()/(float)img.width()<0.9) && (rect.height()/(float)img.height()<0.9) // не более 90% размеров изображения
+                        		 && (rect.width()/(float)img.width()<0.9) && (rect.height()/(float)img.height()<0.9) // пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ 90% пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                         		 ){
                         	 		cn++;
                         	 		
@@ -186,29 +178,23 @@ public class Recognizer {
 	}
 	
 	public static String RecognizeNumber(IplImage src) {
-		// TODO Auto-generated method stub
-		//Tesseract instance = Tesseract.getInstance(); // JNA Interface Mapping
-        // Tesseract1 instance = new Tesseract1(); // JNA Direct Mapping
 		
-		/*
-		TessBaseAPI myOCR = new TessBaseAPI();
+		TessBaseAPI api = new TessBaseAPI();
+		BytePointer outText;
 		
-		
-		  if (myOCR.Init(null, "eng")) {
-			    fprintf(stderr, "Could not initialize tesseract.\n");
-			    exit(1);
+		  if (api.Init(null, "eng") != 0) {
+			  	System.err.println("Could not initialize tesseract.");
+	            System.exit(1);
 			  }
 		  
-		*/
-		System.setProperty("jna.library.path", "c:/javacv-bin/Tess4J/");
-		File imageFile = new File("Images/test_plate.tif");		 
-	        Tesseract instance = Tesseract.getInstance();  // JNA Interface Mapping
-	         //Tesseract1 instance = new Tesseract1(); // JNA Direct Mapping
-
+		  PIX image = pixRead("Images/test_plate.tif");
+		  api.SetImage(image);
+		  
+	        // Get OCR result
 	        try {
-	            String result = instance.doOCR(imageFile);
-	            System.out.println("num:"+result);
-	        } catch (TesseractException e) {
+	        	outText = api.GetUTF8Text();
+	            System.out.println("num:"+outText.getString());
+	        } catch (Exception e) {
 	            System.err.println(e.getMessage());
 	        }
         
@@ -217,7 +203,7 @@ public class Recognizer {
 
 
 	/**
-	 * Разворот многоугольника
+	 * пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	 * @param poly
 	 * @param rect
 	 * @return
@@ -240,7 +226,7 @@ public class Recognizer {
 		
 		
 		
-		// Разворачиваем к квадрату
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		for(int i = 0; i < 4 ; i ++  )
 		{			
 		for(int j = 0; j < 4 ; j ++  )

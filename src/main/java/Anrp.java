@@ -1,18 +1,26 @@
-import static com.googlecode.javacv.cpp.opencv_core.*;
+/*import static com.googlecode.javacv.cpp.opencv_core.*;
 import static com.googlecode.javacv.cpp.opencv_highgui.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
-
+*/
+import java.awt.Image;
 import java.sql.Time;
 import java.util.Date;
 import java.util.Timer;
 import java.util.Vector;
 
-import com.googlecode.javacpp.*;
-import com.googlecode.javacv.CanvasFrame;
-import com.googlecode.javacv.cpp.opencv_core.*;
-import com.googlecode.javacv.cpp.opencv_core.CvSeq;
-import com.googlecode.javacv.cpp.opencv_legacy.CvImageDrawer;
+import org.bytedeco.javacv.*;
+import org.bytedeco.javacv.FrameGrabber.Exception;
+import org.bytedeco.javacpp.*;
+import org.bytedeco.javacpp.opencv_videoio.CvCapture;
 
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
+import static org.bytedeco.javacpp.opencv_imgcodecs.*;
+/*import org.bytedeco.javacv.cpp.CanvasFrame;
+import org.bytedeco.javacv.cpp.opencv_core.*;
+import org.bytedeco.javacv.cpp.opencv_core.CvSeq;
+import org.bytedeco.javacv.cpp.opencv_legacy.CvImageDrawer;
+*/
 
 public class Anrp {
 
@@ -268,49 +276,60 @@ public class Anrp {
 		 
 		 final CanvasFrame original = new CanvasFrame("Ori");		 
 		 dst = cvCloneImage(image);
-          
+
 		 squares = Recognizer.findNumbers(dst);		
 		 drawSquares(dst, dst, squares);
-						
-		 original.showImage(dst);			
+		 
+		 OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
+		 
+		 original.showImage(converter.convert(dst));			
 		 original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
 	}
 	
 	
 	
-	public static void testVideo()
+	public static void testVideo() throws Exception
 	{
-		 IplImage dst;
-	
-		CvCapture capture = cvCreateFileCapture("test.avi");
-		IplImage frame;
+			
+		Frame frm;
+		IplImage dst;
+		IplImage ifrm;
 		Vector<CvSeq> squares;
+		OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 		
-		cvSetCaptureProperty(capture, CV_CAP_PROP_POS_FRAMES, 4700);
+		
 		final CanvasFrame original = new CanvasFrame("Ori");
-		
+				
+		FFmpegFrameGrabber g = new FFmpegFrameGrabber("test.avi");
+		g.start();
+		 
 		while(true){
-			frame = cvQueryFrame( capture ); 
-			if(frame == null) {
-                break;
+			frm = g.grabImage();
+			if(frm == null) {
+	            break;
 			}
 			
-		     dst = cvCloneImage(frame);
+			ifrm = converter.convertToIplImage(frm);
+			
+			dst = cvCloneImage(ifrm);
 
-		     dst = cvCreateImage( cvSize(frame.width()/1, frame.height()/1), frame.depth(), frame.nChannels() );
-             cvResize(frame, dst, frame.nChannels());
-             
-             squares = Recognizer.findNumbers(dst);
- 			
- 			drawSquares(dst, dst, squares);
- 			
- 			
- 			
- 			original.showImage(dst);
+		     dst = cvCreateImage( cvSize(ifrm.width()/1, ifrm.height()/1), ifrm.depth(), ifrm.nChannels() );
+            cvResize(ifrm, dst, ifrm.nChannels());
+            
+            squares = Recognizer.findNumbers(dst);
+			
+			drawSquares(dst, dst, squares);
+			
+			
+			
+			original.showImage(converter.convert(dst));
 			//smooth.showImage(gray);
 			original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
 			
 		}
+		
+		g.stop();
+	
 	}
 	
 	public static void testImageOCR()
@@ -324,8 +343,10 @@ public class Anrp {
           
 		 number = Recognizer.RecognizeNumber(image);		
 		 
+		 OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
+			
 						
-		 original.showImage(image);			
+		 original.showImage(converter.convert(image));			
 		 original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
 	}
 	
@@ -342,7 +363,7 @@ public class Anrp {
 		//Load image img1 as IplImage
 		final IplImage image = cvLoadImage("Images/Test2.jpg");
 		
-		  // клонируем картинку 
+		  // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 
         //final IplImage dst = cvCreateImage(cvSize(image.width(), image.height()), image.depth(), image.nChannels());
         
         //final IplImage gray = cvCreateImage( cvGetSize(image), IPL_DEPTH_8U, 1 );
@@ -397,8 +418,9 @@ public class Anrp {
 			 
 //			 cvAdaptiveThreshold(gray, gray, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 7, 1);
 
+			OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 			
-			original.showImage(dst);
+			original.showImage(converter.convert(dst));
 			//smooth.showImage(gray);
 			original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
 			
@@ -433,7 +455,7 @@ public class Anrp {
 	//	final IplImage dst = cvCloneImage(gray);
 		
 	/*	
-		 // нахождение линий
+		 // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         lines = cvHoughLines2( gray, storage, CV_HOUGH_PROBABILISTIC, 1, Math.PI/180, 10, 10, 10 );       
         
        for(int i=0;i<lines.total();i++)

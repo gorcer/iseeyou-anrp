@@ -7,3 +7,5 @@
 tmp/*
 *.avi
 *.log
+/bin/
+/target/

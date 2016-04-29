@@ -1,4 +1,9 @@
+import java.awt.color.ColorSpace;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
+import java.awt.image.DataBufferByte;
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.Vector;
 
 /*import net.sourceforge.tess4j.*;*/
@@ -180,25 +185,48 @@ public class Recognizer {
 	public static String RecognizeNumber(IplImage src) {
 		
 		TessBaseAPI api = new TessBaseAPI();
-		BytePointer outText;
+		BytePointer outText = null;
+		CvMemStorage storage = CvMemStorage.create();
+		PIX pixImage;
 		
-		  if (api.Init(null, "eng") != 0) {
+		  if (api.Init(null, "avt") != 0) {
 			  	System.err.println("Could not initialize tesseract.");
 	            System.exit(1);
 			  }
 		  
-		  PIX image = pixRead("Images/test_plate.tif");
-		  api.SetImage(image);
 		  
-	        // Get OCR result
-	        try {
-	        	outText = api.GetUTF8Text();
-	            System.out.println("num:"+outText.getString());
-	        } catch (Exception e) {
-	            System.err.println(e.getMessage());
-	        }
-        
-        return "test";
+		  RecognizeConfig config = new RecognizeConfig();
+			for (int j=0;j<2;j++)
+			for (int i=0;i<20;i++)
+			{
+				if (j == 0)
+				{
+					config.doThreshold=false;
+					//config.doDilate=true;
+					config.doCanny=true;				
+					config.Thresh=config.minThresh*1+i*15;
+					config.doPyr=true;
+				}
+				else
+				{
+				config.doThreshold=true;
+				config.Thresh = config.minThresh+i*5;
+				config.doCanny=false;
+				config.doDilate=false;
+				config.doPyr=false;
+				}
+				config.n=j*100+i;
+				
+				IplImage prepareImg = prepareImage(src, storage, config);
+				pixImage = pixReadMem(prepareImg.getByteBuffer(), prepareImg.getByteBuffer().remaining());
+				pixImage = pixRead("Images/test_plate.jpg");
+				api.SetImage(pixImage);
+				outText = api.GetUTF8Text();
+				System.out.println("num:"+outText.getString());
+			}
+			
+	      
+          return outText.getString();
 	}
 
 

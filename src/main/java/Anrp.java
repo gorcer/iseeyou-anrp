@@ -342,7 +342,7 @@ public class Anrp {
 		 
           
 		 number = Recognizer.RecognizeNumber(image);		
-		 
+		 System.out.println("num:"+number);
 		 OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 			
 						

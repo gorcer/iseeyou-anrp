@@ -9,3 +9,7 @@ tmp/*
 *.log
 /bin/
 /target/
+
+.project
+.settings
+.classpath

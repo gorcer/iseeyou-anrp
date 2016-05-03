@@ -115,7 +115,7 @@ public class Recognizer {
 		CvSeq approx;
 		double maxCosine;	
 		Vector<String> recognized;
-		
+		double cosine;
 		
 		IplImage tmp = cvCloneImage(img);
 		//cvSaveImage("tmp/ok-"+config.n+"-"+config.Thresh+".jpg",   img);
@@ -123,10 +123,14 @@ public class Recognizer {
 		
 		
 		int cn=config.n;
+		int pos=0;
 		// ���������� �������
 		while (contours != null && !contours.isNull()) 
 		{
 			
+			/*pos++;
+			System.out.print("-"+pos);
+			*/
 			//���� ����� � ������� > 0
 			if (contours.elem_size() > 0) 
 			{
@@ -143,7 +147,7 @@ public class Recognizer {
                 	 for( int j = 2; j < 5; j++ )
                      {
                 		// find the maximum cosine of the angle between joint edges
-                        double cosine = Math.abs(angle(new CvPoint(cvGetSeqElem(approx, j)), new CvPoint(cvGetSeqElem(approx, j-2)), new CvPoint(cvGetSeqElem(approx, j-1))));
+                        cosine = Math.abs(angle(new CvPoint(cvGetSeqElem(approx, j)), new CvPoint(cvGetSeqElem(approx, j-2)), new CvPoint(cvGetSeqElem(approx, j-1))));
                         maxCosine = Math.max(maxCosine, cosine);
                      }
                 	 if( maxCosine < config.maxCosine ){
@@ -156,7 +160,7 @@ public class Recognizer {
                         		 && (rect.width()/(float)img.width()<0.9) && (rect.height()/(float)img.height()<0.9) // �� ����� 90% �������� �����������
                         		 ){
                         	 		cn++;
-                        	 		
+                        			
                         	 		img = Transform(rect, approx, original, cn);
                         	 		recognized = RecognizeNumber(img);
                         	 		
@@ -198,7 +202,7 @@ public class Recognizer {
 		
 		  if (api.Init(null, "avt") != 0) {
 			  	System.err.println("Could not initialize tesseract.");
-	            System.exit(1);
+	            return result;
 			  }
 		  
 		  //Pattern p = Pattern.compile("^[YKXBAPOCM]\\d{3}[YKXBAPOCM]{2}\\d{2,3}$"); 
@@ -246,6 +250,7 @@ public class Recognizer {
 					result.add(outText); 
 					//System.out.println("["+i+","+j+"]"+" num:["+outText+"] m:"+m.matches());
 				}
+				//System.out.println("["+i+","+j+"]"+" num:["+outText+"] m:"+m.matches());
 			}
 			
 	      

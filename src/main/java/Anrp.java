@@ -271,7 +271,7 @@ public class Anrp {
 	public static void testImage()
 	{
 		 Vector<CvSeq> squares;
-		 final IplImage image = cvLoadImage("Images/test6.jpg");
+		 final IplImage image = cvLoadImage("Images/Test2.jpg");
 		 IplImage dst;
 		 
 		 final CanvasFrame original = new CanvasFrame("Ori");		 
@@ -335,7 +335,7 @@ public class Anrp {
 	public static void testImageOCR()
 	{
 		 Vector<CvSeq> squares;
-		 final IplImage image = cvLoadImage("Images/test_plate.jpg");
+		 final IplImage image = cvLoadImage("tmp/afine1.jpg");
 		 Vector<String> numbers;
 		 
 		 final CanvasFrame original = new CanvasFrame("Ori");		 

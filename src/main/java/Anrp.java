@@ -271,7 +271,7 @@ public class Anrp {
 	public static void testImage()
 	{
 		 Vector<CvSeq> squares;
-		 final IplImage image = cvLoadImage("Images/Test2.jpg");
+		 final IplImage image = cvLoadImage("Images/test6.jpg");
 		 IplImage dst;
 		 
 		 final CanvasFrame original = new CanvasFrame("Ori");		 
@@ -336,22 +336,20 @@ public class Anrp {
 	{
 		 Vector<CvSeq> squares;
 		 final IplImage image = cvLoadImage("Images/test_plate.jpg");
-		 String number;
+		 Vector<String> numbers;
 		 
 		 final CanvasFrame original = new CanvasFrame("Ori");		 
-		 
           
-		 number = Recognizer.RecognizeNumber(image);		
-		 System.out.println("num:"+number);
+		 numbers = Recognizer.RecognizeNumber(image);		
+		 System.out.println("num:"+numbers);
 		 OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
-			
 						
 		 original.showImage(converter.convert(image));			
 		 original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
 	}
 	
 	public static void main(String[] args) {
-		testImageOCR();
+		testImage();
 	}
 	
 	public static void main2(String[] args) {

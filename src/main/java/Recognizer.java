@@ -5,6 +5,8 @@ import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*import net.sourceforge.tess4j.*;*/
 
@@ -94,8 +96,6 @@ public class Recognizer {
     		//System.out.println("Transform src x="+srcArr[j*2]+" y="+srcArr[j*2+1]);    		 
 	    }
 		
-	
-		
 		
 		JavaCV.getPerspectiveTransform(srcArr, new double[]{0,0,tmp.width(),0,tmp.width(),tmp.height(),0,tmp.height()}, warp_mat);
 		
@@ -114,6 +114,7 @@ public class Recognizer {
 		CvSeq contours = new CvSeq(null);
 		CvSeq approx;
 		double maxCosine;	
+		Vector<String> recognized;
 		
 		
 		IplImage tmp = cvCloneImage(img);
@@ -157,15 +158,19 @@ public class Recognizer {
                         	 		cn++;
                         	 		
                         	 		img = Transform(rect, approx, original, cn);
-                        	 		 //RecognizeNumber(Transform(rect, approx, original, cn));
-		                        	 
+                        	 		recognized = RecognizeNumber(img);
+                        	 		
+                        	 		if (recognized.size()>0) {
+                        	 			System.out.println("num:"+recognized.toString());
+                        	 			squares.add(approx);
+                        	 		}
 		                        	 
 		                        //	 System.out.println("("+rect.x()+" , "+rect.y()+") -> Width : "+rect.width()+" Height : "+rect.height()+" div="+(Math.abs(((float)rect.height()/rect.width()))));
 		                       //      System.out.println("Params = thresh:"+config.Thresh);
 		
 		                             
 		                             //cvSeqPush(squares, approx);
-		                             squares.add(approx);
+		                             
 		                             
 		                             //System.out.println(x);
 		                             //System.out.println(x);
@@ -182,18 +187,26 @@ public class Recognizer {
 		return squares; 
 	}
 	
-	public static String RecognizeNumber(IplImage src) {
+	public static Vector<String> RecognizeNumber(IplImage src) {
 		
 		TessBaseAPI api = new TessBaseAPI();
-		BytePointer outText = null;
+		String outText = null;
 		CvMemStorage storage = CvMemStorage.create();
 		PIX pixImage;
+		Matcher m;
+		Vector<String> result = new Vector<String>();
 		
 		  if (api.Init(null, "avt") != 0) {
 			  	System.err.println("Could not initialize tesseract.");
 	            System.exit(1);
 			  }
 		  
+		  //Pattern p = Pattern.compile("^[YKXBAPOCM]\\d{3}[YKXBAPOCM]{2}\\d{2,3}$"); 
+		  Pattern p = Pattern.compile("^[YKXBAPOCM]\\d{3}[YKXBAPOCM]{2}\\d{2,3}$");
+		  /*outText="K095CX77";	 
+		  m = p.matcher(outText);
+		  System.out.println(" m:"+m.matches());
+		  return "";*/
 		  
 		  RecognizeConfig config = new RecognizeConfig();
 			for (int j=0;j<2;j++)
@@ -218,15 +231,25 @@ public class Recognizer {
 				config.n=j*100+i;
 				
 				IplImage prepareImg = prepareImage(src, storage, config);
-				pixImage = pixReadMem(prepareImg.getByteBuffer(), prepareImg.getByteBuffer().remaining());
-				pixImage = pixRead("Images/test_plate.jpg");
+				cvSaveImage("tmp/plate.jpg", prepareImg);
+				
+				pixImage = pixRead("tmp/plate.jpg");
 				api.SetImage(pixImage);
-				outText = api.GetUTF8Text();
-				System.out.println("num:"+outText.getString());
+				outText = api.GetUTF8Text().getString().replaceAll("[^YKXBAPOCM0-9]", "");
+				m = p.matcher(outText);  
+
+				if (m.matches() == true) {
+					
+					if (result.contains(outText) == true)
+						continue;
+
+					result.add(outText); 
+					//System.out.println("["+i+","+j+"]"+" num:["+outText+"] m:"+m.matches());
+				}
 			}
 			
 	      
-          return outText.getString();
+          return result;
 	}
 
 

@@ -87,7 +87,7 @@ public class Recognizer {
 		
 		
 		double[] srcArr = new double[8];		
-		// ��������� ������� � ������ (���������� ������������� �����������)
+		// Переводим полигон в массив (необходимо унифицировать направление)
 		for(int j = 0; j < 4 ; j ++  )
 	    {
     		srcArr[j*2]=(int)pts.get(j).x()-rect.x();
@@ -124,26 +124,26 @@ public class Recognizer {
 		
 		int cn=config.n;
 		int pos=0;
-		// ���������� �������
+		// Перебираем контуры
 		while (contours != null && !contours.isNull()) 
 		{
 			
 			/*pos++;
 			System.out.print("-"+pos);
 			*/
-			//���� ����� � ������� > 0
+			//Если точек в контуре > 0
 			if (contours.elem_size() > 0) 
 			{
                 approx = cvApproxPoly(contours, Loader.sizeof(CvContour.class),storage, CV_POLY_APPROX_DP, cvContourPerimeter(contours)*config.ApproxAccuracy, 0);
                
-                if( approx.total() == 4 // ������ �������
+                if( approx.total() == 4 // Четыре стороны
                         &&
                         Math.abs(cvContourArea(approx, CV_WHOLE_SEQ, 0)) > config.minContourArea &&
-                    cvCheckContourConvexity(approx) != 0 // ������ �������
+                    cvCheckContourConvexity(approx) != 0 // контур замкнут
                     )
                 {
                 	 maxCosine = 0;
-                	 // ���������� ��� ����
+                	 // Перебираем все углы
                 	 for( int j = 2; j < 5; j++ )
                      {
                 		// find the maximum cosine of the angle between joint edges
@@ -154,10 +154,10 @@ public class Recognizer {
                          CvRect rect=cvBoundingRect(approx, 1);
                          
                          if((
-                        		 rect.width()*rect.height())<config.maxSquare // ���� �������
-                        		 && rect.width()>rect.height()  // ������ ������ ������
+                        		 rect.width()*rect.height())<config.maxSquare // Макс площадь
+                        		 && rect.width()>rect.height()  // Ширина больше высоты
                         		 /*&& Math.abs(((float)x.height()/x.width())-config.maxAspectRatio)<0.1*/ 
-                        		 && (rect.width()/(float)img.width()<0.9) && (rect.height()/(float)img.height()<0.9) // �� ����� 90% �������� �����������
+                        		 && (rect.width()/(float)img.width()<0.9) && (rect.height()/(float)img.height()<0.9) // не более 90% размеров изображения
                         		 ){
                         	 		cn++;
                         			
@@ -259,7 +259,7 @@ public class Recognizer {
 
 
 	/**
-	 * �������� ��������������
+	 * Разворот многоугольника
 	 * @param poly
 	 * @param rect
 	 * @return
@@ -282,7 +282,7 @@ public class Recognizer {
 		
 		
 		
-		// ������������� � ��������
+		// Разворачиваем к квадрату
 		for(int i = 0; i < 4 ; i ++  )
 		{			
 		for(int j = 0; j < 4 ; j ++  )

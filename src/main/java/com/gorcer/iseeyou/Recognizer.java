@@ -1,8 +1,12 @@
+package com.gorcer.iseeyou;
+
+import java.awt.Image;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.DataBufferByte;
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Vector;
 import java.util.regex.Matcher;
@@ -12,6 +16,8 @@ import java.util.regex.Pattern;
 
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacpp.*;
+import org.bytedeco.javacpp.opencv_core.CvSeq;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacpp.opencv_videoio.CvCapture;
 
 import static org.bytedeco.javacpp.opencv_core.*;
@@ -37,36 +43,29 @@ public class Recognizer {
 	public static IplImage prepareImage( IplImage src,  CvMemStorage storage, RecognizeConfig config)
 	{	
 	    IplImage gray = cvCreateImage( cvGetSize(src), IPL_DEPTH_8U, 1 );
-	    
 	    cvConvertImage(src, gray, 0);
 	   // cvSaveImage("tmp/src.jpg", src);    
-	    
 	    
 	    if (config.doPyr)
 	    {
 	    	CvSize sz = cvSize(gray.width() & -2, gray.height() & -2);
 	    	IplImage pyr = cvCreateImage(cvSize(sz.width()/2, sz.height()/2), gray.depth(), gray.nChannels());	    	
 	    	cvPyrDown(gray, pyr, CV_GAUSSIAN_5x5);
-	    	cvPyrUp(pyr, gray, CV_GAUSSIAN_5x5);	 
+	    	// Fatal Error тут был
+	    	//cvPyrUp(pyr, gray, CV_GAUSSIAN_5x5);
 	    	//cvSaveImage("tmp/src.jpg", gray);
+	    	
 	    	cvReleaseImage(pyr);
 	    }
-	    
+
 	    if (config.doDilate)
 	    	cvDilate(gray, gray, null, 1);	    
-	    
 	    if (config.doCanny)	    
 	    	 cvCanny(gray, gray, 0, config.Thresh, 3);
 	 	
-	    
-	    
-	    
 	    if (config.doThreshold)
 	    	cvThreshold(gray, gray, config.Thresh, 255, CV_THRESH_BINARY);
-	    
-	    
-		
-	    
+
 		return gray;
 	}
 	
@@ -160,9 +159,9 @@ public class Recognizer {
                         		 && (rect.width()/(float)img.width()<0.9) && (rect.height()/(float)img.height()<0.9) // не более 90% размеров изображения
                         		 ){
                         	 		cn++;
-                        			
                         	 		img = Transform(rect, approx, original, cn);
                         	 		recognized = RecognizeNumber(img);
+                        	 		
                         	 		
                         	 		if (recognized.size()>0) {
                         	 			System.out.println("num:"+recognized.toString());
@@ -186,7 +185,6 @@ public class Recognizer {
 			}
 			contours = contours.h_next();
 		}
-		
 		
 		return squares; 
 	}
@@ -222,7 +220,7 @@ public class Recognizer {
 					//config.doDilate=true;
 					config.doCanny=true;				
 					config.Thresh=config.minThresh*1+i*15;
-					config.doPyr=true;
+					config.doPyr=false;
 				}
 				else
 				{
@@ -239,7 +237,12 @@ public class Recognizer {
 				
 				pixImage = pixRead("tmp/plate.jpg");
 				api.SetImage(pixImage);
-				outText = api.GetUTF8Text().getString().replaceAll("[^YKXBAPOCM0-9]", "");
+				outText = api.GetUTF8Text().getString();
+				
+				if (outText == null)
+					continue;
+				
+				outText=outText.replaceAll("[^YKXBAPOCM0-9]", "");
 				m = p.matcher(outText);  
 
 				if (m.matches() == true) {
@@ -324,7 +327,7 @@ public class Recognizer {
 				//config.doDilate=true;
 				config.doCanny=true;				
 				config.Thresh=config.minThresh*1+i*15;
-				config.doPyr=true;
+				config.doPyr=false; //true
 			}
 			else
 			{
@@ -335,11 +338,9 @@ public class Recognizer {
 			config.doPyr=false;
 			}
 			config.n=j*100+i;
-			
-			IplImage prepareImg = prepareImage(src, storage, config);		
+			IplImage prepareImg = prepareImage(src, storage, config);
 			squares.addAll(findNumber(prepareImg, src, storage, config));
 		}
-		
 		//cvReleaseImage(prepareImg);
 		System.out.println("Total found "+squares.size()+" squares");
 		
@@ -353,6 +354,125 @@ public class Recognizer {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
+	}
+	
+	public static void process(String filename)
+	{
+		 Vector<CvSeq> squares;
+		 final IplImage image = cvLoadImage(filename);
+		 IplImage dst;
+		 Frame draft;
+		 		 
+		 dst = cvCloneImage(image);
+
+		 squares = Recognizer.findNumbers(dst);		
+		 drawSquares(dst, dst, squares);
+		 
+		 OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
+		 draft = converter.convert(dst);
+	}
+	
+	public static void drawSquares( IplImage image, IplImage dst, final Vector<CvSeq> squares )
+	{
+		CvFont font = new CvFont();
+		CvSeq seq;
+		
+	    if((squares.size() >0) ){    
+	            
+	        cvInitFont( font, CV_FONT_HERSHEY_COMPLEX_SMALL, .6, .6, 0, 1, 6);
+
+	     //   CvPoint2D32f srcTri=new CvPoint2D32f(3);
+	     //   CvPoint2D32f dstTri=new CvPoint2D32f(3);
+	        
+	        
+	        
+	        CvMat warp_mat = cvCreateMat(2, 3, CV_32FC1);
+
+	        CvPoint pts = new CvPoint(4);
+	        for(int i = 0; i < squares.size(); i ++  )
+	        { 	
+	        	
+	        	
+	        	
+	        	//System.out.println("i="+i+"; t="+pts.capacity());
+	        	seq = (CvSeq)squares.get(i);
+	        	cvCvtSeqToArray(seq, pts, CV_WHOLE_SEQ);
+	                    
+	            
+	        	//CvRect Rect = new CvRect(10, 10, 100, 100);  //cvBoundingRect(tRect, 1);
+	        	//System.out.println(Rect);        	
+	        	
+	        	// cvSetImageROI(image,Rect);
+	        	 
+	        	 //System.out.println(image);
+	        	 
+	        	//int step=150;
+	        	
+	        	//float[] dstArr = {i*step,0,i*step,Math.round(step*0.2),step+i*step,Math.round(step*0.2)};
+	        	//float[] srcArr = new float[6];
+	                
+		        
+		        /*
+	        	for(int j = 0; j < 3 ; j ++  )
+			    {
+		        	//srcTri.position(j).x(pts.position(j).x());
+		        	//srcTri.position(j).y(pts.position(j).y());
+	        		srcArr[j*2]=(float)pts.position(j).x();
+	        		srcArr[j*2+1]=(float)pts.position(j).y();	        		
+	        		 
+			    }
+	        	
+	        	for(int j = 1; j < 3 ; j ++  )
+			    {     		
+	        		//cvDrawLine(image, new CvPoint((int)srcArr[j*2],(int)srcArr[j*2+1]), new CvPoint((int)srcArr[(j-1)*2],(int)srcArr[(j-1)*2+1]), CvScalar.RED, 1, CV_AA, 0);
+	        		//cvDrawLine(image, new CvPoint((int)dstArr[j*2],(int)dstArr[j*2+1]), new CvPoint((int)dstArr[(j-1)*2],(int)dstArr[(j-1)*2+1]), CvScalar.BLUE, 1, CV_AA, 0);
+	        		//System.out.println("src "+j+" x="+srcTri.position(j).x()+"; y="+srcTri.position(j).y());
+	        		//System.out.println("dst "+j+" x="+dstTri.position(j).x()+"; y="+dstTri.position(j).y());
+			    }
+	        	*/
+	        	
+	        	/*
+	        	 * 
+	        	 * Affine Transform
+	        	 * 
+	        	 * 
+	        	CvRect x = cvBoundingRect(seq, 1);   		
+	     		
+	     		cvSetImageROI(image,x);
+	     		
+	        	//cvGetAffineTransform(srcTri,dstTri,warp_mat);
+	        	cvGetAffineTransform(srcArr, dstArr, warp_mat);
+	        	//cvGetAffineTransform(new float[]{0,0,20,0,20,20}, new float[]{0,0,40,0,20,40}, warp_mat);
+	        	cvWarpAffine(dst, tmpImg, warp_mat);
+
+	        	cvSaveImage("tmp/dst"+i+".jpg",   tmpImg);
+	        	cvResetImageROI(image);
+	             */
+	        	
+	        	
+//	                 //cvBoundingRect(image, i);
+//	            	int npt[] = {4, 4};
+//	                //DrawLine() reference http://opencv.willowgarage.com/documentation/cpp/drawing_functions.html#cv-line
+	            cvDrawLine(image, new CvPoint(pts.position(0).x(),pts.position(0).y()), new CvPoint(pts.position(1).x(),pts.position(1).y()), CvScalar.GREEN, 1, CV_AA, 0);
+	            cvDrawLine(image, new CvPoint(pts.position(1).x(),pts.position(1).y()), new CvPoint(pts.position(2).x(),pts.position(2).y()), CvScalar.GREEN, 1, CV_AA, 0);
+	            cvDrawLine(image, new CvPoint(pts.position(2).x(),pts.position(2).y()), new CvPoint(pts.position(3).x(),pts.position(3).y()), CvScalar.GREEN, 1, CV_AA, 0);
+	            cvDrawLine(image, new CvPoint(pts.position(3).x(),pts.position(3).y()), new CvPoint(pts.position(0).x(),pts.position(0).y()), CvScalar.GREEN, 1, CV_AA, 0);
+	            
+	            //cvPutText( image, "i="+i, new CvPoint(pts.position(0).x()-10,pts.position(0).y()-10), font, CV_RGB(255,255,0) );
+	            
+	            
+	            
+	            //if ( i == 3)
+	           /* for(j = 0; j < pts.capacity() ; j ++  )
+		        {
+	            	System.out.println("x="+pts.position(j).x()+"; y="+pts.position(j).y());
+	            	
+	            	cvPutText( image, ""+j, new CvPoint(pts.position(j).x(),pts.position(j).y()), font, CV_RGB(255,255,0) );
+		        }*/
+	        }
+	    }
+	//    else
+	  //   System.out.println("No squares");
 	}
 
 }

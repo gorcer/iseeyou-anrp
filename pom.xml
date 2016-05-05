@@ -6,7 +6,7 @@
 
 	<groupId>com.gorcer</groupId>
 	<version>1.0</version>
-	<artifactId>iseeyou-anrp</artifactId>
+	<artifactId>iSeeYouAnrp_core</artifactId>
 
     <dependencies>
 			<dependency>

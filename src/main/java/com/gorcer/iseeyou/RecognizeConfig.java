@@ -1,3 +1,4 @@
+package com.gorcer.iseeyou;
 
 public class RecognizeConfig {
 	

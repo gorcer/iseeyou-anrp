@@ -116,6 +116,7 @@ public class Recognizer {
 		Vector<String> recognized;
 		double cosine;
 		
+		
 		IplImage tmp = cvCloneImage(img);
 		//cvSaveImage("tmp/ok-"+config.n+"-"+config.Thresh+".jpg",   img);
 		cvFindContours(tmp, storage, contours, Loader.sizeof(CvContour.class), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
@@ -163,8 +164,15 @@ public class Recognizer {
                         	 		recognized = RecognizeNumber(img);
                         	 		
                         	 		
+                        	 		// Сохраняем информацию о найденном номере
+                        	 		PlateInfo plate = new PlateInfo();
+                        	 		plate.plateImage = img;
+                        	 		plate.plateCoords = approx;
+                        	 		plate.numbers = recognized;                        	 		
+                        	 		FoundedMgr.getInstance().addPlate(plate);
+                        	 		
                         	 		if (recognized.size()>0) {
-                        	 			System.out.println("num:"+recognized.toString());
+                        	 			//System.out.println("num:"+recognized.toString());
                         	 			squares.add(approx);
                         	 		}
 		                        	 
@@ -193,6 +201,7 @@ public class Recognizer {
 		
 		TessBaseAPI api = new TessBaseAPI();
 		String outText = null;
+		BytePointer recText = null;
 		CvMemStorage storage = CvMemStorage.create();
 		PIX pixImage;
 		Matcher m;
@@ -237,12 +246,12 @@ public class Recognizer {
 				
 				pixImage = pixRead("tmp/plate.jpg");
 				api.SetImage(pixImage);
-				outText = api.GetUTF8Text().getString();
+				recText = api.GetUTF8Text();
 				
-				if (outText == null)
+				if (recText == null)
 					continue;
 				
-				outText=outText.replaceAll("[^YKXBAPOCM0-9]", "");
+				outText=recText.getString().replaceAll("[^YKXBAPOCM0-9]", "");
 				m = p.matcher(outText);  
 
 				if (m.matches() == true) {
@@ -315,6 +324,7 @@ public class Recognizer {
 	{
 		Vector<CvSeq> squares = new Vector<CvSeq>();
 		CvMemStorage storage = CvMemStorage.create();
+		
 		
 		
 		RecognizeConfig config = new RecognizeConfig();

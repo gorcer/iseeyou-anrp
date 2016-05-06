@@ -11,6 +11,7 @@ import java.util.Vector;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.FrameGrabber.Exception;
 
+import com.gorcer.iseeyou.FoundedMgr;
 import com.gorcer.iseeyou.Recognizer;
 
 import org.bytedeco.javacpp.*;
@@ -183,6 +184,8 @@ public class Anrp {
 		 Recognizer.drawSquares(dst, dst, squares);
 		 
 		 OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
+		 
+		 FoundedMgr mgr = FoundedMgr.getInstance();		 
 		 
 		 original.showImage(converter.convert(dst));			
 		 original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);

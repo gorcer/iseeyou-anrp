@@ -44,7 +44,7 @@ public class Recognizer {
 	    	IplImage pyr = cvCreateImage(cvSize(sz.width()/2, sz.height()/2), gray.depth(), gray.nChannels());	    	
 	    	cvPyrDown(gray, pyr, CV_GAUSSIAN_5x5);
 	    	// Fatal Error тут был
-	    	//cvPyrUp(pyr, gray, CV_GAUSSIAN_5x5);
+	    	cvPyrUp(pyr, gray, CV_GAUSSIAN_5x5);
 	    	//cvSaveImage("tmp/src.jpg", gray);
 	    	
 	    	cvReleaseImage(pyr);
@@ -227,7 +227,7 @@ public class Recognizer {
 				config.Thresh = config.minThresh+i*5;
 				config.doCanny=false;
 				config.doDilate=false;
-				config.doPyr=false;
+				config.doPyr=true;
 				}
 				config.n=j*100+i;
 				
@@ -334,7 +334,7 @@ public class Recognizer {
 				//config.doDilate=true;
 				config.doCanny=true;				
 				config.Thresh=config.minThresh*1+i*15;
-				config.doPyr=false; //true
+				config.doPyr=true; //true
 			}
 			else
 			{

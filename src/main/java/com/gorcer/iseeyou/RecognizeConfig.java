@@ -7,7 +7,7 @@ public class RecognizeConfig {
 	public boolean doThreshold=true;
 	public boolean doCanny=false;
 	public boolean doDilate=false;
-	public boolean doPyr=false;
+	public boolean doPyr=true;
 	public int minContourArea=50;
 	public double maxCosine=0.4;
 	public double maxSquare=500000;

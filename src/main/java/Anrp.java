@@ -16,7 +16,7 @@ import java.util.Vector;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.FrameGrabber.Exception;
 
-import com.gorcer.iseeyou.FoundedMgr;
+import com.gorcer.iseeyou.FounderMgr;
 import com.gorcer.iseeyou.Recognizer;
 
 import org.bytedeco.javacpp.*;
@@ -180,14 +180,14 @@ public class Anrp {
 		 Vector<CvSeq> squares;
 		 final IplImage image = cvLoadImage("Images/Test2.jpg");
 		 IplImage dst;
-		 FoundedMgr mgr = FoundedMgr.getInstance();
+		 FounderMgr mgr = FounderMgr.getInstance();
 		 mgr.prepareEnv();
 		 
 		 final CanvasFrame original = new CanvasFrame("Ori");		 
 		 dst = cvCloneImage(image);
 
 		 squares = Recognizer.findNumbers(dst);		
-		 Recognizer.drawSquares(dst, dst, squares);
+		 Recognizer.drawSquares(dst, squares);
 		 
 		 OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 		 
@@ -230,7 +230,7 @@ public class Anrp {
             
             squares = Recognizer.findNumbers(dst);
 			
-            Recognizer.drawSquares(dst, dst, squares);
+            Recognizer.drawSquares(dst, squares);
 			
 			
 			
@@ -274,7 +274,7 @@ public class Anrp {
 			}
 			else {
 				String fn = args[0]; 
-				FoundedMgr mgr = FoundedMgr.getInstance();
+				FounderMgr mgr = FounderMgr.getInstance();
 				mgr.prepareEnv();		
 				 
 				// Если url
@@ -296,13 +296,9 @@ public class Anrp {
 				 }
 					 
 				 System.out.println("Start processing");
-				 Vector<CvSeq> squares;
-				 final IplImage image = cvLoadImage(fn);
-				 IplImage dst;				 		 
 				 		 
-				 dst = cvCloneImage(image);
-				 squares = Recognizer.findNumbers(dst);		
-				 Vector numbers = mgr.getNumbers();
+				 Recognizer.process(fn);				 
+				 Vector<String> numbers = mgr.getNumbers();
 				 
 				 System.out.println("Found " + mgr.plates.size() + " plates");
 				 System.out.println("Found " + numbers.size() + " numbers: "+ numbers.toString());
@@ -366,7 +362,7 @@ public class Anrp {
              
              squares = Recognizer.findNumbers(dst);
 			
-             Recognizer.drawSquares(dst, dst, squares);
+             Recognizer.drawSquares(dst, squares);
 			
 			/*CvSize sz = cvSize(gray.width() & -2, gray.height() & -2);			
 			IplImage pyr = cvCreateImage(cvSize(sz.width()/2, sz.height()/2), gray.depth(), gray.nChannels());

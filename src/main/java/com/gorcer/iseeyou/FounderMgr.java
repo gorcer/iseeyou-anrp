@@ -7,19 +7,33 @@ import java.nio.file.Paths;
 import java.util.UUID;
 import java.util.Vector;
 
-public class FoundedMgr {
+import org.bytedeco.javacpp.opencv_core.CvSeq;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 
-	public static FoundedMgr self=null;
+/**
+ * Клас для 
+ * - хранения информации о полученном результате распознавания
+ * - управления временными папками
+ * - подсчета времени выполнения
+ * @author gorcer
+ *
+ */
+public class FounderMgr {
+
+	public static FounderMgr self=null;
 	public Vector<PlateInfo> plates;
 	public long startTime, endTime;
 	
 	public String tmpPath = "/tmp/iSeeYouAnrp";
 	private String tmpPathPostfix;
 	
-	public static FoundedMgr getInstance() {
+	public IplImage sourceImage;
+	
+	public static FounderMgr getInstance() {
 		if (self == null)
 		{
-			self = new FoundedMgr();
+			//System.out.println("Create founder");
+			self = new FounderMgr();
 			self.plates = new Vector<PlateInfo>();
 		}		
 		return self;
@@ -28,7 +42,7 @@ public class FoundedMgr {
 	public boolean prepareEnv() {
 		
 		tmpPathPostfix = UUID.randomUUID().toString(); 
-		
+		//System.out.println("Prepare env " + tmpPathPostfix);
 		// Создаем временное хранилище
 		Path path = Paths.get(tmpPath + "/" + tmpPathPostfix);
 		
@@ -80,6 +94,18 @@ public class FoundedMgr {
 				result.add(plates.get(i).numbers.get(j));
 		}
 		
+		return result;
+	}
+
+	public Vector<CvSeq> getSquares() {
+		
+		Vector<CvSeq> result =new Vector<CvSeq>();
+		
+		for (int i=0;i<plates.size();i++) {
+			result.add(plates.get(i).plateCoords);
+		}
+		
+		// TODO Auto-generated method stub
 		return result;
 	}
 }

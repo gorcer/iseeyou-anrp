@@ -66,7 +66,7 @@ public class Recognizer {
 		IplImage tmp = cvCreateImage( cvSize(52*4, 12*4), img.depth(), img.nChannels() );		
 		CvMat warp_mat = cvCreateMat(3, 3, CV_32FC1);
 		Vector<CvPoint> pts;
-		String tmpPath = FoundedMgr.getInstance().getPersonalTmpPath();
+		String tmpPath = FounderMgr.getInstance().getPersonalTmpPath();
 		
 		pts = getDirectPoints(poly, rect);
 		if (pts==null) return(null);
@@ -89,7 +89,7 @@ public class Recognizer {
 		//cvGetAffineTransform(srcArr, new float[]{0,0,52,0,20,40}, warp_mat);
 		cvSetImageROI(img,rect);
 		cvWarpPerspective(img, tmp, warp_mat);		
-		cvSaveImage(tmpPath + "/afine"+n+".jpg",  tmp);
+		//cvSaveImage(tmpPath + "/afine"+n+".jpg",  tmp);
 		cvResetImageROI(img);
 		
 		return(tmp);
@@ -157,7 +157,7 @@ public class Recognizer {
                         	 		plate.plateImage = img;
                         	 		plate.plateCoords = approx;
                         	 		plate.numbers = recognized;                        	 		
-                        	 		FoundedMgr.getInstance().addPlate(plate);
+                        	 		FounderMgr.getInstance().addPlate(plate);
                         	 		
                         	 		if (recognized.size()>0) {
                         	 			//System.out.println("num:"+recognized.toString());
@@ -207,11 +207,11 @@ public class Recognizer {
 		  System.out.println(" m:"+m.matches());
 		  return "";*/
 		  
-		  String tmpPath = FoundedMgr.getInstance().getPersonalTmpPath();
+		  String tmpPath = FounderMgr.getInstance().getPersonalTmpPath();
 		  
 		  RecognizeConfig config = new RecognizeConfig();
 			for (int j=0;j<2;j++)
-			for (int i=0;i<20;i++)
+			for (int i=0;i<20;i+=5)
 			{
 				if (j == 0)
 				{
@@ -320,9 +320,6 @@ public class Recognizer {
 	{
 		Vector<CvSeq> squares = new Vector<CvSeq>();
 		CvMemStorage storage = CvMemStorage.create();
-		long startTime = System.currentTimeMillis();
-		
-		FoundedMgr.getInstance().start();
 		
 		RecognizeConfig config = new RecognizeConfig();
 		for (int j=0;j<2;j++)
@@ -349,10 +346,7 @@ public class Recognizer {
 			squares.addAll(findNumber(prepareImg, src, storage, config));
 		}
 		//cvReleaseImage(prepareImg);
-		//System.out.println("Total found "+squares.size()+" squares");
-		
-		
-		FoundedMgr.getInstance().finish();	
+		//System.out.println("Total found "+squares.size()+" squares");	
 		
 		return squares;
 		
@@ -368,21 +362,17 @@ public class Recognizer {
 	
 	public static void process(String filename)
 	{
-		 Vector<CvSeq> squares;
-		 final IplImage image = cvLoadImage(filename);
-		 IplImage dst;
-		 Frame draft;
-		 		 
-		 dst = cvCloneImage(image);
-
-		 squares = Recognizer.findNumbers(dst);		
-		 drawSquares(dst, dst, squares);
+		FounderMgr mgr = FounderMgr.getInstance(); 
+		mgr.start();
+		
+		final IplImage image = cvLoadImage(filename);
+		mgr.sourceImage = image;
+		Recognizer.findNumbers( cvCloneImage(image) );
 		 
-		 OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
-		 draft = converter.convert(dst);
+		mgr.finish();
 	}
 	
-	public static void drawSquares( IplImage image, IplImage dst, final Vector<CvSeq> squares )
+	public static void drawSquares( IplImage image, final Vector<CvSeq> squares )
 	{
 		CvFont font = new CvFont();
 		CvSeq seq;

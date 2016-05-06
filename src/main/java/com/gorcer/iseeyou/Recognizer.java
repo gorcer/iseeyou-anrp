@@ -324,8 +324,9 @@ public class Recognizer {
 	{
 		Vector<CvSeq> squares = new Vector<CvSeq>();
 		CvMemStorage storage = CvMemStorage.create();
+		long startTime = System.currentTimeMillis();
 		
-		
+		FoundedMgr.getInstance().start();
 		
 		RecognizeConfig config = new RecognizeConfig();
 		for (int j=0;j<2;j++)
@@ -353,6 +354,9 @@ public class Recognizer {
 		}
 		//cvReleaseImage(prepareImg);
 		System.out.println("Total found "+squares.size()+" squares");
+		
+		
+		FoundedMgr.getInstance().finish();	
 		
 		return squares;
 		

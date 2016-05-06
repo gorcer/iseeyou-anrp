@@ -186,6 +186,7 @@ public class Anrp {
 		 OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 		 
 		 FoundedMgr mgr = FoundedMgr.getInstance();		 
+		 System.out.println("Обработка заняла " + mgr.getWorkTime() + " сек.");
 		 
 		 original.showImage(converter.convert(dst));			
 		 original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);

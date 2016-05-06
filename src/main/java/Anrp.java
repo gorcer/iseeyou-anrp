@@ -2,10 +2,15 @@
 import static com.googlecode.javacv.cpp.opencv_highgui.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 */
-import java.awt.Image;
-import java.sql.Time;
-import java.util.Date;
-import java.util.Timer;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Vector;
 
 import org.bytedeco.javacv.*;
@@ -15,7 +20,6 @@ import com.gorcer.iseeyou.FoundedMgr;
 import com.gorcer.iseeyou.Recognizer;
 
 import org.bytedeco.javacpp.*;
-import org.bytedeco.javacpp.opencv_videoio.CvCapture;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
@@ -176,6 +180,8 @@ public class Anrp {
 		 Vector<CvSeq> squares;
 		 final IplImage image = cvLoadImage("Images/Test2.jpg");
 		 IplImage dst;
+		 FoundedMgr mgr = FoundedMgr.getInstance();
+		 mgr.prepareEnv();
 		 
 		 final CanvasFrame original = new CanvasFrame("Ori");		 
 		 dst = cvCloneImage(image);
@@ -185,8 +191,8 @@ public class Anrp {
 		 
 		 OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 		 
-		 FoundedMgr mgr = FoundedMgr.getInstance();		 
-		 System.out.println("Обработка заняла " + mgr.getWorkTime() + " сек.");
+		 		 
+		 System.out.println("Processing took " + mgr.getWorkTime() + " sec.");
 		 
 		 original.showImage(converter.convert(dst));			
 		 original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
@@ -254,8 +260,59 @@ public class Anrp {
 		 original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
 	}
 	
-	public static void main(String[] args) {
-		testImage();
+	public static void main(String[] args) throws IOException {
+
+		//testImage();
+		 System.out.println(args);
+		if (args.length == 0) {
+			System.out.println("Undefined image to recognize, type -h to help");
+			System.exit(0);
+		}		 
+		else if (args.length == 1) {
+			if (args[0] == "-h") {
+				System.out.println("Use java -jar iSeeYouAnrp.jar path_to_file.jpg|http://.../.jpg");
+				System.exit(0);
+			}
+			else {
+				String fn = args[0]; 
+				FoundedMgr mgr = FoundedMgr.getInstance();
+				mgr.prepareEnv();		
+				 
+				// Если url
+				if (fn.toLowerCase().contains("http") && (fn.toLowerCase().contains("jpg") || fn.toLowerCase().contains("jpeg"))) {
+					System.out.println("Try to download file " + fn);
+					URL website = new URL(fn);
+					ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+					fn = mgr.getPersonalTmpPath() + "/downloadedvc.jpg";
+					FileOutputStream fos = new FileOutputStream(fn);
+					fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+					fos.close();					
+					System.out.println("Download and save to " + fn);
+				}
+				
+				// Если файл на диске
+				 if (!Files.exists(Paths.get(fn))) {
+					System.out.println("File not found " + fn);
+					System.exit(0); 
+				 }
+					 
+				 System.out.println("Start processing");
+				 Vector<CvSeq> squares;
+				 final IplImage image = cvLoadImage(fn);
+				 IplImage dst;				 		 
+				 		 
+				 dst = cvCloneImage(image);
+				 squares = Recognizer.findNumbers(dst);		
+				 Vector numbers = mgr.getNumbers();
+				 		 
+				 System.out.println("Found " + numbers.size() + " numbers: "+ numbers.toString());
+				 System.out.println("Processing finished, " + mgr.getWorkTime() + " sec. remained");				 
+				
+			}
+		}
+		
+		
+		
 	}
 	
 	public static void main2(String[] args) {

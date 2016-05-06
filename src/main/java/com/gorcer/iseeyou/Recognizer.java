@@ -1,13 +1,6 @@
 package com.gorcer.iseeyou;
 
-import java.awt.Image;
-import java.awt.color.ColorSpace;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorConvertOp;
-import java.awt.image.DataBufferByte;
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
+
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,7 +11,6 @@ import org.bytedeco.javacv.*;
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacpp.opencv_core.CvSeq;
 import org.bytedeco.javacpp.opencv_core.IplImage;
-import org.bytedeco.javacpp.opencv_videoio.CvCapture;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
@@ -70,20 +62,16 @@ public class Recognizer {
 	}
 	
 	public static IplImage Transform(CvRect rect, CvSeq poly, IplImage img, int n)
-	{
-		
-		
+	{	
 		IplImage tmp = cvCreateImage( cvSize(52*4, 12*4), img.depth(), img.nChannels() );		
 		CvMat warp_mat = cvCreateMat(3, 3, CV_32FC1);
 		Vector<CvPoint> pts;
-		 
-		pts = getDirectPoints(poly, rect);
+		String tmpPath = FoundedMgr.getInstance().getPersonalTmpPath();
 		
+		pts = getDirectPoints(poly, rect);
 		if (pts==null) return(null);
 		
 		//cvCvtSeqToArray(poly, pts, CV_WHOLE_SEQ);
-		
-		
 		
 		double[] srcArr = new double[8];		
 		// Переводим полигон в массив (необходимо унифицировать направление)
@@ -101,7 +89,7 @@ public class Recognizer {
 		//cvGetAffineTransform(srcArr, new float[]{0,0,52,0,20,40}, warp_mat);
 		cvSetImageROI(img,rect);
 		cvWarpPerspective(img, tmp, warp_mat);		
-		cvSaveImage("tmp/afine"+n+".jpg",  tmp);
+		cvSaveImage(tmpPath + "/afine"+n+".jpg",  tmp);
 		cvResetImageROI(img);
 		
 		return(tmp);
@@ -219,6 +207,8 @@ public class Recognizer {
 		  System.out.println(" m:"+m.matches());
 		  return "";*/
 		  
+		  String tmpPath = FoundedMgr.getInstance().getPersonalTmpPath();
+		  
 		  RecognizeConfig config = new RecognizeConfig();
 			for (int j=0;j<2;j++)
 			for (int i=0;i<20;i++)
@@ -242,9 +232,9 @@ public class Recognizer {
 				config.n=j*100+i;
 				
 				IplImage prepareImg = prepareImage(src, storage, config);
-				cvSaveImage("tmp/plate.jpg", prepareImg);
+				cvSaveImage(tmpPath + "/plate.jpg", prepareImg);
 				
-				pixImage = pixRead("tmp/plate.jpg");
+				pixImage = pixRead(tmpPath + "/plate.jpg");
 				api.SetImage(pixImage);
 				recText = api.GetUTF8Text();
 				
@@ -265,7 +255,13 @@ public class Recognizer {
 				//System.out.println("["+i+","+j+"]"+" num:["+outText+"] m:"+m.matches());
 			}
 			
-	      
+			try {
+				api.close();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
           return result;
 	}
 
@@ -353,7 +349,7 @@ public class Recognizer {
 			squares.addAll(findNumber(prepareImg, src, storage, config));
 		}
 		//cvReleaseImage(prepareImg);
-		System.out.println("Total found "+squares.size()+" squares");
+		//System.out.println("Total found "+squares.size()+" squares");
 		
 		
 		FoundedMgr.getInstance().finish();	

@@ -262,8 +262,7 @@ public class Anrp {
 	
 	public static void main(String[] args) throws IOException {
 
-		//testImage();
-		 System.out.println(args);
+		//testImage();		
 		if (args.length == 0) {
 			System.out.println("Undefined image to recognize, type -h to help");
 			System.exit(0);
@@ -304,7 +303,8 @@ public class Anrp {
 				 dst = cvCloneImage(image);
 				 squares = Recognizer.findNumbers(dst);		
 				 Vector numbers = mgr.getNumbers();
-				 		 
+				 
+				 System.out.println("Found " + mgr.plates.size() + " plates");
 				 System.out.println("Found " + numbers.size() + " numbers: "+ numbers.toString());
 				 System.out.println("Processing finished, " + mgr.getWorkTime() + " sec. remained");				 
 				

@@ -426,7 +426,6 @@ public class Recognizer {
 				}
 				
 				if (equalPoints == 4) {
-					System.out.println("plate remove "+j);
 					plates.remove(j);
 				}
 				

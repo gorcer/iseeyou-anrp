@@ -9,6 +9,7 @@ import java.util.Vector;
 
 import org.bytedeco.javacpp.opencv_core.CvSeq;
 import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.javacpp.tesseract.TessBaseAPI;
 
 /**
  * Клас для 
@@ -28,11 +29,12 @@ public class FounderMgr {
 	private String tmpPathPostfix;
 	
 	public IplImage sourceImage;
+	public TessBaseAPI api;
 	
 	public static FounderMgr getInstance() {
 		if (self == null)
 		{
-			System.out.println("Create founder");
+			//System.out.println("Create founder");
 			self = new FounderMgr();
 			self.plates = new Vector<PlateInfo>();
 			self.rawPlates = new Vector<PlateInfo>();
@@ -62,6 +64,13 @@ public class FounderMgr {
 		self.plates.clear();
 		self.rawPlates.clear();
 				
+		// Инициализируем тезеракт
+		self.api = new TessBaseAPI();
+		if (self.api.Init(null, "avt") != 0) {
+		  	System.err.println("Could not initialize tesseract.");
+            return false;
+		  }
+		
 		return true;		
 	}
 	
@@ -80,6 +89,13 @@ public class FounderMgr {
 	
 	public long finish() {
 		endTime = System.currentTimeMillis();
+		
+		try {
+			api.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		return endTime - startTime;
 	}

@@ -248,12 +248,12 @@ public class Anrp {
 	{
 		 Vector<CvSeq> squares;
 		 final IplImage image = cvLoadImage("tmp/afine1.jpg");
-		 Vector<String> numbers;
+		 String number;
 		 
 		 final CanvasFrame original = new CanvasFrame("Ori");		 
           
-		 numbers = Recognizer.RecognizeNumber(image);		
-		 System.out.println("num:"+numbers);
+		 number = Recognizer.RecognizeNumber(image);		
+		 System.out.println("num:"+number);
 		 OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 						
 		 original.showImage(converter.convert(image));			

@@ -101,8 +101,9 @@ public class Recognizer {
 		CvSeq contours = new CvSeq(null);
 		CvSeq approx;
 		double maxCosine;	
-		Vector<String> recognized;
+		Vector<String> recognized = new Vector<String>();
 		double cosine;
+		String number;
 		
 		
 		IplImage tmp = cvCloneImage(img);
@@ -150,8 +151,9 @@ public class Recognizer {
                         	 		cn++;
                         	 		img = Transform(rect, approx, original, cn);
                         	 		//tmp=cvCloneImage(img);
-                        	 		recognized = RecognizeNumber(img);
-                        	 		
+                        	 		number = RecognizeNumber(img);
+                        	 		if (number != null)
+                        	 			recognized.add(number);
                         	 		
                         	 		// Сохраняем информацию о найденном номере
                         	 		PlateInfo plate = new PlateInfo();
@@ -159,6 +161,7 @@ public class Recognizer {
                         	 		plate.plateCoords = approx;
                         	 		plate.numbers = recognized;                        	 		
                         	 		FounderMgr.getInstance().addPlate(plate);
+                        	 		
                         	 		//System.out.println("size="+FounderMgr.getInstance().plates.size());
                         	 		if (recognized.size()>0) {
                         	 			//System.out.println("num:"+recognized.toString());
@@ -186,20 +189,18 @@ public class Recognizer {
 		return squares; 
 	}
 	
-	public static Vector<String> RecognizeNumber(IplImage src) {
+	public static String RecognizeNumber(IplImage src) {
 		
-		TessBaseAPI api = new TessBaseAPI();
+		
 		String outText = null;
 		BytePointer recText = null;
 		CvMemStorage storage = CvMemStorage.create();
 		PIX pixImage;
 		Matcher m;
-		Vector<String> result = new Vector<String>();
+		String result = null;
 		
-		  if (api.Init(null, "avt") != 0) {
-			  	System.err.println("Could not initialize tesseract.");
-	            return result;
-			  }
+		FounderMgr mgr = FounderMgr.getInstance();
+		  
 		  
 		  //Pattern p = Pattern.compile("^[YKXBAPOCM]\\d{3}[YKXBAPOCM]{2}\\d{2,3}$"); 
 		  Pattern p = Pattern.compile("^[ABCEHKMOPTXY]\\d{3}[ABCEHKMOPTXY]{2}\\d{2,3}$");
@@ -211,58 +212,46 @@ public class Recognizer {
 		  String tmpPath = FounderMgr.getInstance().getPersonalTmpPath();
 		  
 		  RecognizeConfig config = new RecognizeConfig();
-			for (int j=0;j<2;j++)
-			for (int i=0;i<20;i+=5)
-			{
-				if (j == 0)
-				{
-					config.doThreshold=false;
-					//config.doDilate=true;
-					config.doCanny=true;				
-					config.Thresh=config.minThresh*1+i*15;
-					config.doPyr=false;
-				}
-				else
-				{
-				config.doThreshold=true;
-				config.Thresh = config.minThresh+i*5;
-				config.doCanny=false;
-				config.doDilate=false;
-				config.doPyr=true;
-				}
-				config.n=j*100+i;
+		  config.doThreshold=false;
+			config.doDilate=false;
+			config.doCanny=false;				
+			config.Thresh=180;
+			config.doPyr=false;
+			config.n=1;
 				
 				IplImage prepareImg = prepareImage(src, storage, config);
 				cvSaveImage(tmpPath + "/plate.jpg", prepareImg);
 				
 				pixImage = pixRead(tmpPath + "/plate.jpg");
-				api.SetImage(pixImage);
-				recText = api.GetUTF8Text();
 				
-				if (recText == null)
-					continue;
+				if (pixImage == null) System.out.println("pix null");
+				if (mgr.api == null) System.out.println("mgr.api null");
 				
-				outText = recText.getString();
-				outText = outText.replaceAll("[^ABCEHKMOPTXY0-9]", "");
-				m = p.matcher(outText);  
-
-				if (m.matches() == true) {
-					
-					if (result.contains(outText) == true)
-						continue;
-
-					result.add(outText); 
-					//System.out.println("["+i+","+j+"]"+" num:["+outText+"] m:"+m.matches());
+				
+				mgr.api.SetImage(pixImage);
+				recText = mgr.api.GetUTF8Text();
+				
+				PlateInfo plate = new PlateInfo();
+    	 		plate.plateImage = prepareImg;
+    	 		plate.numbers = new Vector<String>();
+    	 		
+    	 		//System.out.println("recText " + recText.getString()+" size="+mgr.rawPlates.size());
+				if (recText != null) {
+									
+					outText = recText.getString();
+					outText = outText.replaceAll("[^ABCEHKMOPTXY0-9]", "");
+					m = p.matcher(outText);  
+	
+					if (m.matches() == true) {
+	        	 		plate.numbers.add(outText);
+						result=outText; 
+						//System.out.println("["+i+","+j+"]"+" num:["+outText+"] m:"+m.matches());
+					}
 				}
+				
+				mgr.rawPlates.add(plate);
 				//System.out.println("["+i+","+j+"]"+" num:["+outText+"] m:"+m.matches());
-			}
 			
-			try {
-				api.close();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 			
           return result;
 	}

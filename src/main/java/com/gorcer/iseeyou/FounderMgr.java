@@ -21,7 +21,7 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 public class FounderMgr {
 
 	public static FounderMgr self=null;
-	public Vector<PlateInfo> plates;
+	public Vector<PlateInfo> plates, rawPlates;
 	public long startTime, endTime;
 	
 	public String tmpPath = "/tmp/iSeeYouAnrp";
@@ -32,9 +32,10 @@ public class FounderMgr {
 	public static FounderMgr getInstance() {
 		if (self == null)
 		{
-			//System.out.println("Create founder");
+			System.out.println("Create founder");
 			self = new FounderMgr();
 			self.plates = new Vector<PlateInfo>();
+			self.rawPlates = new Vector<PlateInfo>();
 		}		
 		return self;
 	}	
@@ -56,6 +57,10 @@ public class FounderMgr {
 				return false;
 			}
 		} 
+		
+		// Отчищаем список
+		self.plates.clear();
+		self.rawPlates.clear();
 				
 		return true;		
 	}

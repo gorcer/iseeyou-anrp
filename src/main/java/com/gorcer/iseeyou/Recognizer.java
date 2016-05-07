@@ -149,6 +149,7 @@ public class Recognizer {
                         		 ){
                         	 		cn++;
                         	 		img = Transform(rect, approx, original, cn);
+                        	 		//tmp=cvCloneImage(img);
                         	 		recognized = RecognizeNumber(img);
                         	 		
                         	 		
@@ -158,7 +159,7 @@ public class Recognizer {
                         	 		plate.plateCoords = approx;
                         	 		plate.numbers = recognized;                        	 		
                         	 		FounderMgr.getInstance().addPlate(plate);
-                        	 		
+                        	 		//System.out.println("size="+FounderMgr.getInstance().plates.size());
                         	 		if (recognized.size()>0) {
                         	 			//System.out.println("num:"+recognized.toString());
                         	 			squares.add(approx);
@@ -201,7 +202,7 @@ public class Recognizer {
 			  }
 		  
 		  //Pattern p = Pattern.compile("^[YKXBAPOCM]\\d{3}[YKXBAPOCM]{2}\\d{2,3}$"); 
-		  Pattern p = Pattern.compile("^[YKXBAPOCM]\\d{3}[YKXBAPOCM]{2}\\d{2,3}$");
+		  Pattern p = Pattern.compile("^[ABCEHKMOPTXY]\\d{3}[ABCEHKMOPTXY]{2}\\d{2,3}$");
 		  /*outText="K095CX77";	 
 		  m = p.matcher(outText);
 		  System.out.println(" m:"+m.matches());
@@ -241,7 +242,8 @@ public class Recognizer {
 				if (recText == null)
 					continue;
 				
-				outText=recText.getString().replaceAll("[^YKXBAPOCM0-9]", "");
+				outText = recText.getString();
+				outText = outText.replaceAll("[^ABCEHKMOPTXY0-9]", "");
 				m = p.matcher(outText);  
 
 				if (m.matches() == true) {
@@ -343,7 +345,7 @@ public class Recognizer {
 			}
 			config.n=j*100+i;
 			IplImage prepareImg = prepareImage(src, storage, config);
-			squares.addAll(findNumber(prepareImg, src, storage, config));
+			findNumber(prepareImg, src, storage, config);
 		}
 		//cvReleaseImage(prepareImg);
 		//System.out.println("Total found "+squares.size()+" squares");	

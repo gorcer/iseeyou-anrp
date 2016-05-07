@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.Vector;
 
@@ -44,7 +46,11 @@ public class FounderMgr {
 	
 	public boolean prepareEnv() {
 		
-		tmpPathPostfix = UUID.randomUUID().toString(); 
+		// uncomment in prod
+		//tmpPathPostfix = UUID.randomUUID().toString();
+		
+		tmpPathPostfix = "local";
+		
 		//System.out.println("Prepare env " + tmpPathPostfix);
 		// Создаем временное хранилище
 		Path path = Paths.get(tmpPath + "/" + tmpPathPostfix);
@@ -117,6 +123,42 @@ public class FounderMgr {
 		
 		return result;
 	}
+	
+	public Map<String,Integer> getNumStat() {
+		Map<String,Integer> map = new HashMap<String,Integer>();
+		String number;
+		int cnt;
+		
+		for (int i=0;i<plates.size();i++) 
+			for (int j=0;j<plates.get(i).numbers.size();j++) {
+				number = plates.get(i).numbers.get(j);
+				
+				if (!map.containsKey(number)) {
+					map.put(number, 1);
+				} else {
+					cnt = map.get(number);
+					map.put(number, cnt+1);
+				}
+			}
+		return map;
+	}
+	
+	public String getBestNum() {
+		Map<String,Integer> map = getNumStat();
+		int max=0;
+		String best="";
+		
+		for (Map.Entry<String,Integer> entry : map.entrySet()) {
+			  
+			  if (entry.getValue() > max) {
+				  best = entry.getKey();
+				  max = entry.getValue();
+			  }
+			  
+			}
+		
+		return best;
+	}
 
 	public Vector<CvSeq> getSquares() {
 		
@@ -128,5 +170,11 @@ public class FounderMgr {
 		
 		// TODO Auto-generated method stub
 		return result;
+	}
+
+	public void destroy() {
+		self = null;
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -16,7 +16,6 @@ import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
-import static org.bytedeco.javacpp.tesseract.*;
 import static org.bytedeco.javacpp.lept.*;
 
 public class Recognizer {
@@ -63,10 +62,9 @@ public class Recognizer {
 	
 	public static IplImage Transform(CvRect rect, CvSeq poly, IplImage img, int n)
 	{	
-		IplImage tmp = cvCreateImage( cvSize(52*4, 12*4), img.depth(), img.nChannels() );		
+		IplImage tmp = cvCreateImage( cvSize(208, 48), img.depth(), img.nChannels() );		
 		CvMat warp_mat = cvCreateMat(3, 3, CV_32FC1);
 		Vector<CvPoint> pts;
-		String tmpPath = FounderMgr.getInstance().getPersonalTmpPath();
 		
 		pts = getDirectPoints(poly, rect);
 		if (pts==null) return(null);
@@ -80,6 +78,7 @@ public class Recognizer {
     		srcArr[j*2]=(int)pts.get(j).x()-rect.x();
     		srcArr[j*2+1]=(int)pts.get(j).y()-rect.y();	
     		
+    		
     		//System.out.println("Transform src x="+srcArr[j*2]+" y="+srcArr[j*2+1]);    		 
 	    }
 		
@@ -92,10 +91,14 @@ public class Recognizer {
 		//cvSaveImage(tmpPath + "/afine"+n+".jpg",  tmp);
 		cvResetImageROI(img);
 		
+		warp_mat=null;
+		pts=null;
+		
 		return(tmp);
 	}
 	
-	public static Vector<CvSeq> findNumber(IplImage img, IplImage original, CvMemStorage storage, RecognizeConfig config)
+	
+	public static Vector<CvSeq> findSquaresFiltered(IplImage img, IplImage original, CvMemStorage storage, RecognizeConfig config)
 	{
 		Vector<CvSeq> squares = new Vector<CvSeq>();
 		CvSeq contours = new CvSeq(null);
@@ -103,8 +106,6 @@ public class Recognizer {
 		double maxCosine;	
 		Vector<String> recognized = new Vector<String>();
 		double cosine;
-		String number;
-		
 		
 		IplImage tmp = cvCloneImage(img);
 		//cvSaveImage("tmp/ok-"+config.n+"-"+config.Thresh+".jpg",   img);
@@ -117,20 +118,17 @@ public class Recognizer {
 		while (contours != null && !contours.isNull()) 
 		{
 			
-			/*pos++;
-			System.out.print("-"+pos);
-			*/
 			//Если точек в контуре > 0
 			if (contours.elem_size() > 0) 
 			{
                 approx = cvApproxPoly(contours, Loader.sizeof(CvContour.class),storage, CV_POLY_APPROX_DP, cvContourPerimeter(contours)*config.ApproxAccuracy, 0);
-               
-                if( approx.total() == 4 // Четыре стороны
-                        &&
-                        Math.abs(cvContourArea(approx, CV_WHOLE_SEQ, 0)) > config.minContourArea &&
-                    cvCheckContourConvexity(approx) != 0 // контур замкнут
+                
+                if (approx.total() == 4 // Четыре стороны
+                    && Math.abs(cvContourArea(approx, CV_WHOLE_SEQ, 0)) > config.minContourArea
+                    && cvCheckContourConvexity(approx) != 0 // контур замкнут
                     )
                 {
+                	
                 	 maxCosine = 0;
                 	 // Перебираем все углы
                 	 for( int j = 2; j < 5; j++ )
@@ -139,57 +137,30 @@ public class Recognizer {
                         cosine = Math.abs(angle(new CvPoint(cvGetSeqElem(approx, j)), new CvPoint(cvGetSeqElem(approx, j-2)), new CvPoint(cvGetSeqElem(approx, j-1))));
                         maxCosine = Math.max(maxCosine, cosine);
                      }
-                	 if( maxCosine < config.maxCosine ){
+                	 
+                	 if( maxCosine < config.maxCosine )	{
                          CvRect rect=cvBoundingRect(approx, 1);
-                         
-                         if((
-                        		 rect.width()*rect.height())<config.maxSquare // Макс площадь
-                        		 && rect.width()>rect.height()  // Ширина больше высоты
+                         if (                        		 
+                        		 //rect.width()*rect.height()<config.maxSquare && // Макс площадь
+                        		 rect.width()>rect.height()  // Ширина больше высоты
                         		 /*&& Math.abs(((float)x.height()/x.width())-config.maxAspectRatio)<0.1*/ 
                         		 && (rect.width()/(float)img.width()<0.9) && (rect.height()/(float)img.height()<0.9) // не более 90% размеров изображения
-                        		 ){
-                        	 		cn++;
-                        	 		img = Transform(rect, approx, original, cn);
-                        	 		//tmp=cvCloneImage(img);
-                        	 		number = RecognizeNumber(img);
-                        	 		if (number != null)
-                        	 			recognized.add(number);
-                        	 		
-                        	 		// Сохраняем информацию о найденном номере
-                        	 		PlateInfo plate = new PlateInfo();
-                        	 		plate.plateImage = img;
-                        	 		plate.plateCoords = approx;
-                        	 		plate.numbers = recognized;                        	 		
-                        	 		FounderMgr.getInstance().addPlate(plate);
-                        	 		
-                        	 		//System.out.println("size="+FounderMgr.getInstance().plates.size());
-                        	 		if (recognized.size()>0) {
-                        	 			//System.out.println("num:"+recognized.toString());
+                        		 )	{  
+                        	 
                         	 			squares.add(approx);
-                        	 		}
-		                        	 
-		                        //	 System.out.println("("+rect.x()+" , "+rect.y()+") -> Width : "+rect.width()+" Height : "+rect.height()+" div="+(Math.abs(((float)rect.height()/rect.width()))));
-		                       //      System.out.println("Params = thresh:"+config.Thresh);
-		
-		                             
-		                             //cvSeqPush(squares, approx);
-		                             
-		                             
-		                             //System.out.println(x);
-		                             //System.out.println(x);
-                         }
+                         			}
                          //else System.out.println("False w : "+x.width()+" x h : "+x.height()+" = "+x.width()*x.height());
-                 }
-                	 
+                	 }
                 }
 			}
+			
 			contours = contours.h_next();
 		}
 		
 		return squares; 
 	}
 	
-	public static String RecognizeNumber(IplImage src) {
+	public static Vector<String> RecognizeNumber(IplImage src) {
 		
 		
 		String outText = null;
@@ -197,12 +168,10 @@ public class Recognizer {
 		CvMemStorage storage = CvMemStorage.create();
 		PIX pixImage;
 		Matcher m;
-		String result = null;
+		Vector<String> result = new Vector<String>();
 		
 		FounderMgr mgr = FounderMgr.getInstance();
-		  
-		  
-		  //Pattern p = Pattern.compile("^[YKXBAPOCM]\\d{3}[YKXBAPOCM]{2}\\d{2,3}$"); 
+
 		  Pattern p = Pattern.compile("^[ABCEHKMOPTXY]\\d{3}[ABCEHKMOPTXY]{2}\\d{2,3}$");
 		  /*outText="K095CX77";	 
 		  m = p.matcher(outText);
@@ -212,47 +181,59 @@ public class Recognizer {
 		  String tmpPath = FounderMgr.getInstance().getPersonalTmpPath();
 		  
 		  RecognizeConfig config = new RecognizeConfig();
-		  config.doThreshold=false;
+		  
+		  for (int i=0;i<50;i++) {
+		  
+			config.doThreshold=true;
 			config.doDilate=false;
 			config.doCanny=false;				
-			config.Thresh=180;
+			config.Thresh=0+i*10;
 			config.doPyr=false;
-			config.n=1;
+			config.n=i;
 				
 				IplImage prepareImg = prepareImage(src, storage, config);
-				cvSaveImage(tmpPath + "/plate.jpg", prepareImg);
 				
+				// Перевод изоражения в PIX
+				cvSaveImage(tmpPath + "/plate.jpg", prepareImg);				
 				pixImage = pixRead(tmpPath + "/plate.jpg");
 				
-				if (pixImage == null) System.out.println("pix null");
-				if (mgr.api == null) System.out.println("mgr.api null");
-				
-				
+				// Распознаем
 				mgr.api.SetImage(pixImage);
 				recText = mgr.api.GetUTF8Text();
 				
-				PlateInfo plate = new PlateInfo();
-    	 		plate.plateImage = prepareImg;
-    	 		plate.numbers = new Vector<String>();
+				// Для отладки распознавалки, потом убрать
+				PlateInfo rawPlate = new PlateInfo();
+    	 		rawPlate.plateImage = prepareImg;
+    	 		rawPlate.numbers = new Vector<String>();
     	 		
-    	 		//System.out.println("recText " + recText.getString()+" size="+mgr.rawPlates.size());
+    	 		// Если найден текст
 				if (recText != null) {
 									
 					outText = recText.getString();
+					// Убираем все лишнее
 					outText = outText.replaceAll("[^ABCEHKMOPTXY0-9]", "");
+					rawPlate.numbers.add(outText);
 					m = p.matcher(outText);  
 	
+					// Если текст соответствует маске номера
 					if (m.matches() == true) {
-	        	 		plate.numbers.add(outText);
-						result=outText; 
+						
+	        	 		if (!result.contains(outText))
+	        	 			result.add(outText); 
 						//System.out.println("["+i+","+j+"]"+" num:["+outText+"] m:"+m.matches());
 					}
 				}
 				
-				mgr.rawPlates.add(plate);
+				mgr.rawPlates.add(rawPlate);
 				//System.out.println("["+i+","+j+"]"+" num:["+outText+"] m:"+m.matches());
+		  }
 			
-			
+		  storage=null;
+		  outText=null;
+		  recText=null;
+		  pixImage=null;
+		  m=null;
+		  
           return result;
 	}
 
@@ -273,6 +254,7 @@ public class Recognizer {
 		
 		int x,y, minJ=0;
 		double min=0, s;
+		
 		
 		ptsNew.add(new CvPoint().x(rect.x()).y(rect.y()));
 		ptsNew.add(new CvPoint().x(rect.x()+rect.width()).y(rect.y()));
@@ -307,37 +289,48 @@ public class Recognizer {
 	}
 
 
-	public static Vector<CvSeq> findNumbers( IplImage src)
+	public static Vector<CvSeq> findSquares( IplImage src)
 	{
 		Vector<CvSeq> squares = new Vector<CvSeq>();
+		Vector<CvSeq> tmpSquares = new Vector<CvSeq>();
 		CvMemStorage storage = CvMemStorage.create();
+		IplImage prepareImg;
 		
 		RecognizeConfig config = new RecognizeConfig();
-		for (int j=0;j<2;j++)
-		for (int i=0;i<20;i++)
+		for (int j=0;j<1;j++)
+		for (int i=0;i<70;i++)
 		{
 			if (j == 0)
 			{
 				config.doThreshold=false;
 				//config.doDilate=true;
 				config.doCanny=true;				
-				config.Thresh=config.minThresh*1+i*15;
+				config.Thresh=config.minThresh*1+i*10;
 				config.doPyr=true; //true
 			}
 			else
 			{
-			config.doThreshold=true;
-			config.Thresh = config.minThresh+i*5;
-			config.doCanny=false;
-			config.doDilate=false;
-			config.doPyr=false;
+				config.doThreshold=true;
+				config.Thresh = config.minThresh+i*5;
+				config.doCanny=false;
+				config.doDilate=false;
+				config.doPyr=false;
 			}
 			config.n=j*100+i;
-			IplImage prepareImg = prepareImage(src, storage, config);
-			findNumber(prepareImg, src, storage, config);
+			prepareImg = prepareImage(src, storage, config);
+						
+			cvSaveImage(FounderMgr.getInstance().getPersonalTmpPath()+"/filtered"+config.n+".jpg", prepareImg);
+			
+			tmpSquares = findSquaresFiltered(prepareImg, src, storage, config);
+			
+			squares.addAll(tmpSquares);
 		}
 		//cvReleaseImage(prepareImg);
 		//System.out.println("Total found "+squares.size()+" squares");	
+		
+		tmpSquares=null;
+		storage=null;
+		prepareImg=null;
 		
 		return squares;
 		
@@ -353,16 +346,94 @@ public class Recognizer {
 	
 	public static void process(String filename)
 	{
+		IplImage tmpImage;
+		
 		FounderMgr mgr = FounderMgr.getInstance(); 
 		mgr.start();
 		
 		final IplImage image = cvLoadImage(filename);
 		mgr.sourceImage = image;
-		Recognizer.findNumbers( cvCloneImage(image) );
-		 
+		tmpImage = cvCloneImage(image);
+		
+		Vector<CvSeq> squares = findSquares( tmpImage );
+		System.out.println("Found " + squares.size() + " squares");
+		optimizePlates(squares);
+		System.out.println("Plates after optimization " + squares.size() + " squares");
+		Vector<String> numbers = findNumbers(squares, tmpImage);
+		System.out.println("Found " + numbers.size() + " numbers: "+ numbers.toString());
+		
 		mgr.finish();
 	}
 	
+	private static Vector<String> findNumbers(Vector<CvSeq> plates, IplImage original) {
+		
+		CvRect rect;
+		CvSeq approx;
+		IplImage tmpImage;
+		Vector<String> recognized;
+		Vector<String> numbers = new Vector<String>();
+		
+		for (int i=0; i<plates.size(); i++) {
+		
+			approx = plates.get(i);
+			rect=cvBoundingRect(approx, 1);
+			
+			tmpImage = Transform(rect, approx, original, i);
+	 		recognized = RecognizeNumber(tmpImage);
+	 		numbers.addAll(recognized);
+	 		
+	 		// Сохраняем информацию о найденном номере
+	 		PlateInfo plate = new PlateInfo();
+	 		plate.plateImage = cvCloneImage(tmpImage);
+	 		plate.plateCoords = approx;
+	 		plate.numbers = recognized;                        	 		
+	 		FounderMgr.getInstance().addPlate(plate);
+	 		
+		}
+		
+		return numbers;
+	}
+
+
+	private static void optimizePlates(Vector<CvSeq> plates) {
+		
+		CvSeq plateI, plateJ;
+		CvPoint pI, pJ;
+		int equalPoints;
+		
+		// TODO Auto-generated method stub
+		if (plates.size() > 0)
+		for(int i=0; i<plates.size();i++) 
+			for(int j=0; j<plates.size();j++) {
+				
+				if (i == j) continue;
+				
+				if (i>=plates.size() || j>=plates.size())
+					continue;
+				
+				plateI = plates.get(i);
+				plateJ = plates.get(j);
+				
+				
+				equalPoints=0;
+				for (int n=0;n<4;n++) {
+					pI = new CvPoint(cvGetSeqElem(plateI, n));
+					pJ = new CvPoint(cvGetSeqElem(plateJ, n));
+
+					if ( Math.abs(pI.x() - pJ.x()) < 10 && Math.abs(pI.y() - pJ.y()) < 10) {
+						equalPoints++;
+					}
+				}
+				
+				if (equalPoints == 4) {
+					System.out.println("plate remove "+j);
+					plates.remove(j);
+				}
+				
+		}
+	}
+
+
 	public static void drawSquares( IplImage image, final Vector<CvSeq> squares )
 	{
 		CvFont font = new CvFont();

@@ -2,10 +2,9 @@
 import static com.googlecode.javacv.cpp.opencv_highgui.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 */
-import java.io.FileNotFoundException;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -177,7 +176,7 @@ public class Anrp {
 	
 	public static void testImage()
 	{
-		 Vector<CvSeq> squares;
+		 /*Vector<CvSeq> squares;
 		 final IplImage image = cvLoadImage("Images/Test2.jpg");
 		 IplImage dst;
 		 FounderMgr mgr = FounderMgr.getInstance();
@@ -195,7 +194,7 @@ public class Anrp {
 		 System.out.println("Processing took " + mgr.getWorkTime() + " sec.");
 		 
 		 original.showImage(converter.convert(dst));			
-		 original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
+		 original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);*/
 	}
 	
 	
@@ -203,7 +202,7 @@ public class Anrp {
 	public static void testVideo() throws Exception
 	{
 			
-		Frame frm;
+		/*Frame frm;
 		IplImage dst;
 		IplImage ifrm;
 		Vector<CvSeq> squares;
@@ -240,7 +239,7 @@ public class Anrp {
 			
 		}
 		
-		g.stop();
+		g.stop();*/
 	
 	}
 	
@@ -248,12 +247,12 @@ public class Anrp {
 	{
 		 Vector<CvSeq> squares;
 		 final IplImage image = cvLoadImage("tmp/afine1.jpg");
-		 String number;
+		 Vector<String> numbers;
 		 
 		 final CanvasFrame original = new CanvasFrame("Ori");		 
           
-		 number = Recognizer.RecognizeNumber(image);		
-		 System.out.println("num:"+number);
+		 numbers = Recognizer.RecognizeNumber(image);		
+		 System.out.println("num:"+numbers.toString());
 		 OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 						
 		 original.showImage(converter.convert(image));			
@@ -313,8 +312,6 @@ public class Anrp {
 	
 	public static void main2(String[] args) {
 		
-		 CvSeq contours = new CvSeq(null);
-		 CvMemStorage storage = CvMemStorage.create();
 		 Vector<CvSeq> squares;// = new Vector();
 		
 		//Load image img1 as IplImage
@@ -330,7 +327,6 @@ public class Anrp {
 		
 		//create canvas frame named 'Demo'
 		final CanvasFrame original = new CanvasFrame("Ori");
-		final CanvasFrame smooth = new CanvasFrame("Smo");
 /*		
 		CvCapture capture = cvCreateFileCapture("test.avi");
 		IplImage frame;
@@ -360,9 +356,9 @@ public class Anrp {
              
      	    
              
-             squares = Recognizer.findNumbers(dst);
+            // squares = Recognizer.findNumbers(dst);
 			
-             Recognizer.drawSquares(dst, squares);
+        //     Recognizer.drawSquares(dst, squares);
 			
 			/*CvSize sz = cvSize(gray.width() & -2, gray.height() & -2);			
 			IplImage pyr = cvCreateImage(cvSize(sz.width()/2, sz.height()/2), gray.depth(), gray.nChannels());

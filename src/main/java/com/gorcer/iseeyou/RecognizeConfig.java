@@ -8,6 +8,8 @@ public class RecognizeConfig {
 	public boolean doCanny=false;
 	public boolean doDilate=false;
 	public boolean doPyr=true;
+	public boolean doSmooth=true;
+	
 	public int minContourArea=1000;
 	public double maxCosine=0.4;
 	public double maxSquare=500000;

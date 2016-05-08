@@ -43,12 +43,16 @@ public class Recognizer {
 	    	CvSize sz = cvSize(gray.width() & -2, gray.height() & -2);
 	    	IplImage pyr = cvCreateImage(cvSize(sz.width()/2, sz.height()/2), gray.depth(), gray.nChannels());	    	
 	    	cvPyrDown(gray, pyr, CV_GAUSSIAN_5x5);
-	    	
-	    	cvSaveImage("tmp/pyr.jpg", pyr); 
 	    	// Fatal Error тут был
 	    	cvPyrUp(pyr, gray, CV_GAUSSIAN_5x5);
 	    	
 	    	cvReleaseImage(pyr);
+	    }
+	    
+	    if (config.doSmooth) {
+	    	// сглаживаем исходную картинку
+	        cvSmooth(gray, gray);
+	        cvSaveImage("artifacts/smooth.jpg", gray); 
 	    }
 
 	    if (config.doDilate)
@@ -310,6 +314,7 @@ public class Recognizer {
 				config.doCanny=true;				
 				config.Thresh=config.minThresh*1+i*10;
 				config.doPyr=false; //true
+				config.doSmooth=true;
 			}
 			else
 			{

@@ -33,6 +33,8 @@ public class FounderMgr {
 	public IplImage sourceImage;
 	public TessBaseAPI api;
 	
+	public boolean verbose=false;
+	
 	public static FounderMgr getInstance() {
 		if (self == null)
 		{
@@ -146,7 +148,7 @@ public class FounderMgr {
 	public String getBestNum() {
 		Map<String,Integer> map = getNumStat();
 		int max=0;
-		String best="";
+		String best=null;
 		
 		for (Map.Entry<String,Integer> entry : map.entrySet()) {
 			  
@@ -176,5 +178,11 @@ public class FounderMgr {
 		self = null;
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public void println(String text) {
+		if (verbose == true) {
+			System.out.println(text);
+		}
 	}
 }

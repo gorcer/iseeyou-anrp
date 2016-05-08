@@ -263,46 +263,57 @@ public class Anrp {
 
 		//testImage();		
 		if (args.length == 0) {
-			System.out.println("Undefined image to recognize, type -h to help");
+			System.out.println("Error: Undefined image to recognize, type -h to help");
 			System.exit(0);
 		}		 
-		else if (args.length == 1) {
+		else if (args.length > 0) {
 			if (args[0] == "-h") {
-				System.out.println("Use java -jar iSeeYouAnrp.jar path_to_file.jpg|http://.../.jpg");
+				System.out.println("Use java -jar iSeeYouAnrp.jar path_to_file.jpg|http://.../.jpg [-v]");
 				System.exit(0);
 			}
 			else {
 				String fn = args[0]; 
 				FounderMgr mgr = FounderMgr.getInstance();
-				mgr.prepareEnv();		
-				 
+				mgr.prepareEnv();	
+				
+				
+				
+				if (args.length == 2 && args[1].equals("-v")) {
+					mgr.verbose = true;
+				}
+				
 				// Если url
 				if (fn.toLowerCase().contains("http") && (fn.toLowerCase().contains("jpg") || fn.toLowerCase().contains("jpeg"))) {
-					System.out.println("Try to download file " + fn);
+					mgr.println("Try to download file " + fn);
 					URL website = new URL(fn);
 					ReadableByteChannel rbc = Channels.newChannel(website.openStream());
 					fn = mgr.getPersonalTmpPath() + "/downloadedvc.jpg";
 					FileOutputStream fos = new FileOutputStream(fn);
 					fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 					fos.close();					
-					System.out.println("Download and save to " + fn);
+					mgr.println("Download and save to " + fn);
 				}
 				
 				// Если файл на диске
 				 if (!Files.exists(Paths.get(fn))) {
-					System.out.println("File not found " + fn);
+					System.out.println("Error: File not found " + fn);
 					System.exit(0); 
 				 }
 					 
-				 System.out.println("Start processing");
+				 mgr.println("Start processing");
 				 		 
 				 Recognizer.process(fn);				 
 				 Vector<String> numbers = mgr.getNumbers();
 				 
-				 System.out.println("Found " + mgr.plates.size() + " plates");
-				 System.out.println("Found " + numbers.size() + " numbers: "+ numbers.toString());
-				 System.out.println("Processing finished, " + mgr.getWorkTime() + " sec. remained");				 
+				 mgr.println("Found " + mgr.plates.size() + " plates");
+				 mgr.println("The number is " + mgr.getBestNum());
+				 mgr.println("Processing finished, " + mgr.getWorkTime() + " sec. remained");				 
 				
+				 String num = mgr.getBestNum();
+				 if (num == null)
+					 System.out.print("empty");
+				 else
+					 System.out.print(num);
 			}
 		}
 		

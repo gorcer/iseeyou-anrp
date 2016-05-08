@@ -13,3 +13,6 @@ tmp/*
 .project
 .settings
 .classpath
+
+tmp
+Images

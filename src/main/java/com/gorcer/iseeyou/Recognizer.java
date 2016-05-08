@@ -51,6 +51,7 @@ public class Recognizer {
 
 	    if (config.doDilate)
 	    	cvDilate(gray, gray, null, 1);	    
+	    
 	    if (config.doCanny)	    
 	    	 cvCanny(gray, gray, 0, config.Thresh, 3);
 	 	
@@ -356,11 +357,11 @@ public class Recognizer {
 		tmpImage = cvCloneImage(image);
 		
 		Vector<CvSeq> squares = findSquares( tmpImage );
-		System.out.println("Found " + squares.size() + " squares");
-		optimizePlates(squares);
-		System.out.println("Plates after optimization " + squares.size() + " squares");
+		mgr.println("Found " + squares.size() + " squares");
+		optimizeSquares(squares);
+		mgr.println("Squares after optimization " + squares.size() + " squares");
 		Vector<String> numbers = findNumbers(squares, tmpImage);
-		System.out.println("Found " + numbers.size() + " numbers: "+ numbers.toString());
+		mgr.println("Found " + numbers.size() + " numbers: "+ numbers.toString());
 		
 		mgr.finish();
 	}
@@ -395,7 +396,7 @@ public class Recognizer {
 	}
 
 
-	private static void optimizePlates(Vector<CvSeq> plates) {
+	private static void optimizeSquares(Vector<CvSeq> plates) {
 		
 		CvSeq plateI, plateJ;
 		CvPoint pI, pJ;

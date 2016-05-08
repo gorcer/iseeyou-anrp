@@ -316,9 +316,6 @@ public class Anrp {
 					 System.out.print(num);
 			}
 		}
-		
-		
-		
 	}
 	
 	public static void main2(String[] args) {

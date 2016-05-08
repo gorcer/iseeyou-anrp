@@ -37,6 +37,7 @@ public class Recognizer {
 	    cvConvertImage(src, gray, 0);
 	   // cvSaveImage("tmp/src.jpg", src);    
 	    
+	    // Уменьшает в два раза, затем увеличивает, в результате мелкие детали исчезают
 	    if (config.doPyr)
 	    {
 	    	CvSize sz = cvSize(gray.width() & -2, gray.height() & -2);
@@ -44,6 +45,7 @@ public class Recognizer {
 	    	cvPyrDown(gray, pyr, CV_GAUSSIAN_5x5);
 	    	// Fatal Error тут был
 	    	cvPyrUp(pyr, gray, CV_GAUSSIAN_5x5);
+	    	
 	    	//cvSaveImage("tmp/src.jpg", gray);
 	    	
 	    	cvReleaseImage(pyr);
@@ -203,17 +205,17 @@ public class Recognizer {
 				recText = mgr.api.GetUTF8Text();
 				
 				// Для отладки распознавалки, потом убрать
-				PlateInfo rawPlate = new PlateInfo();
+				/*PlateInfo rawPlate = new PlateInfo();
     	 		rawPlate.plateImage = prepareImg;
     	 		rawPlate.numbers = new Vector<String>();
-    	 		
+    	 		*/
     	 		// Если найден текст
 				if (recText != null) {
 									
 					outText = recText.getString();
 					// Убираем все лишнее
 					outText = outText.replaceAll("[^ABCEHKMOPTXY0-9]", "");
-					rawPlate.numbers.add(outText);
+					//rawPlate.numbers.add(outText);
 					m = p.matcher(outText);  
 	
 					// Если текст соответствует маске номера
@@ -225,7 +227,7 @@ public class Recognizer {
 					}
 				}
 				
-				mgr.rawPlates.add(rawPlate);
+				//mgr.rawPlates.add(rawPlate);
 				//System.out.println("["+i+","+j+"]"+" num:["+outText+"] m:"+m.matches());
 		  }
 			
@@ -318,6 +320,7 @@ public class Recognizer {
 				config.doPyr=false;
 			}
 			config.n=j*100+i;
+			
 			prepareImg = prepareImage(src, storage, config);
 						
 			cvSaveImage(FounderMgr.getInstance().getPersonalTmpPath()+"/filtered"+config.n+".jpg", prepareImg);
@@ -355,7 +358,6 @@ public class Recognizer {
 		final IplImage image = cvLoadImage(filename);
 		mgr.sourceImage = image;
 		tmpImage = cvCloneImage(image);
-		
 		Vector<CvSeq> squares = findSquares( tmpImage );
 		mgr.println("Found " + squares.size() + " squares");
 		optimizeSquares(squares);
@@ -385,11 +387,11 @@ public class Recognizer {
 	 		
 	 		// Сохраняем информацию о найденном номере
 	 		PlateInfo plate = new PlateInfo();
-	 		plate.plateImage = cvCloneImage(tmpImage);
+	 		if (FounderMgr.getInstance().verbose) //т.к. жрет память
+	 			plate.plateImage = cvCloneImage(tmpImage);
 	 		plate.plateCoords = approx;
 	 		plate.numbers = recognized;                        	 		
 	 		FounderMgr.getInstance().addPlate(plate);
-	 		
 		}
 		
 		return numbers;

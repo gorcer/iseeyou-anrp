@@ -11,6 +11,9 @@ plates=0
 founded=0
 errors=0
 
+if (os.path.exists("recognized.log")):
+    os.remove("recognized.log")
+
 path = "./tmp/aimnumbers";
 regions = os.listdir(path)
 for region in regions:
@@ -47,11 +50,11 @@ for region in regions:
 					plates=plates+1
 					if (result.lower() == number.lower()):
 						founded=founded+1
-						with open("recognized.log", "a") as myfile:
-						    myfile.write("Found number " + result + " on the image "+ fullImagePath + " and it's correct\n")
+						with open("recognized.log", "a") as logfile:
+						    logfile.write("Found number " + result + " on the image "+ fullImagePath + " and it's correct\n")
 					else:
-						with open("recognized.log", "a") as myfile:
-						    myfile.write("Found number " + result + " on the image "+ fullImagePath + "\n")
+						with open("recognized.log", "a") as logfile:
+						    logfile.write("Found number " + result + " on the image "+ fullImagePath + "\n")
 						print "diferent " + number + " - " + result
 
 				print number + ": e/p: %d/%d f:%d err:%d" % (empty,plates,founded,errors,)

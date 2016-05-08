@@ -175,6 +175,8 @@ public class FounderMgr {
 	}
 
 	public void destroy() {
+		self.plates=null;
+		self.rawPlates=null;
 		self = null;
 		// TODO Auto-generated method stub
 		

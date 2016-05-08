@@ -19,6 +19,7 @@ import com.gorcer.iseeyou.FounderMgr;
 import com.gorcer.iseeyou.Recognizer;
 
 import org.bytedeco.javacpp.*;
+import org.bytedeco.javacpp.opencv_core.IplImage;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
@@ -261,6 +262,8 @@ public class Anrp {
 	
 	public static void main(String[] args) throws IOException {
 
+		
+		
 		//testImage();		
 		if (args.length == 0) {
 			System.out.println("Error: Undefined image to recognize, type -h to help");
@@ -314,8 +317,11 @@ public class Anrp {
 					 System.out.print("empty");
 				 else
 					 System.out.print(num);
+				 
+				 mgr.destroy();
 			}
 		}
+		
 	}
 	
 	public static void main2(String[] args) {

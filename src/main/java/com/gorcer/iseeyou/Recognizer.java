@@ -294,7 +294,7 @@ public class Recognizer {
 	}
 
 
-	public static Vector<CvSeq> findSquares( IplImage src, FounderMgr mgr)
+	public static Vector<CvSeq> findSquares( IplImage src)
 	{
 		Vector<CvSeq> squares = new Vector<CvSeq>();
 		Vector<CvSeq> tmpSquares = new Vector<CvSeq>();
@@ -326,7 +326,7 @@ public class Recognizer {
 			
 			prepareImg = prepareImage(src, storage, config);
 						
-			cvSaveImage(mgr.getPersonalTmpPath()+"/filtered"+config.n+".jpg", prepareImg);
+			cvSaveImage(FounderMgr.getPersonalTmpPath()+"/filtered"+config.n+".jpg", prepareImg);
 			
 			tmpSquares = findSquaresFiltered(prepareImg, src, storage, config);
 			
@@ -361,7 +361,7 @@ public class Recognizer {
 		
 		mgr.sourceImage = image;
 		tmpImage = cvCloneImage(image);
-		Vector<CvSeq> squares = findSquares( tmpImage, mgr);
+		Vector<CvSeq> squares = findSquares( tmpImage);
 		mgr.println("Found " + squares.size() + " squares");
 		optimizeSquares(squares);
 		mgr.println("Squares after optimization " + squares.size() + " squares");
@@ -373,7 +373,7 @@ public class Recognizer {
 		mgr=null;
 	}
 	
-	private static Vector<PlateInfo> findNumbers(Vector<CvSeq> plates, IplImage original, FounderMgr mgr) {
+	private static Vector<PlateInfo> findNumbers(Vector<CvSeq> plates, IplImage original) {
 		
 		CvRect rect;
 		CvSeq approx;
@@ -390,9 +390,9 @@ public class Recognizer {
 	 		recognized = RecognizeNumber(tmpImage, mgr); 		
 	 		
 	 		// Сохраняем информацию о найденном номере
-	 		PlateInfo plate = new PlateInfo();
-	 		if (mgr.verbose) //т.к. жрет память
-	 			plate.plateImage = cvCloneImage(tmpImage);
+	 		PlateInfo plate = new PlateInfo();	
+	 		plate.addPlateImage(tmpImage);
+	 		//plate.plateImage = cvCloneImage(tmpImage);
 	 		plate.plateCoords = approx;
 	 		plate.numbers = recognized;   
 	 		result.add(plate);	 		

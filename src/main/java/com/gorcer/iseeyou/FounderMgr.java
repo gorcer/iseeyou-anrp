@@ -23,7 +23,7 @@ import org.bytedeco.javacpp.tesseract.TessBaseAPI;
  */
 public class FounderMgr {
 
-	public static FounderMgr self=null;
+	//public static FounderMgr self=null;
 	public Vector<PlateInfo> plates, rawPlates;
 	public long startTime, endTime;
 	
@@ -35,16 +35,19 @@ public class FounderMgr {
 	
 	public boolean verbose=false;
 	
+	/*
 	public static FounderMgr getInstance() {
 		if (self == null)
 		{
-			//System.out.println("Create founder");
-			self = new FounderMgr();
-			self.plates = new Vector<PlateInfo>();
-			self.rawPlates = new Vector<PlateInfo>();
+			self = new FounderMgr();			
 		}		
 		return self;
-	}	
+	}	*/
+	
+	public FounderMgr() {
+		plates = new Vector<PlateInfo>();
+		rawPlates = new Vector<PlateInfo>();
+	}
 	
 	public boolean prepareEnv() {
 		
@@ -69,12 +72,12 @@ public class FounderMgr {
 		} 
 		
 		// Отчищаем список
-		self.plates.clear();
-		self.rawPlates.clear();
+		//plates.clear();
+		//rawPlates.clear();
 				
 		// Инициализируем тезеракт
-		self.api = new TessBaseAPI();
-		if (self.api.Init(null, "avt") != 0) {
+		api = new TessBaseAPI();
+		if (api.Init(null, "avt") != 0) {
 		  	System.err.println("Could not initialize tesseract.");
             return false;
 		  }
@@ -175,9 +178,9 @@ public class FounderMgr {
 	}
 
 	public void destroy() {
-		self.plates=null;
-		self.rawPlates=null;
-		self = null;
+		plates=null;
+		rawPlates=null;
+		//self = null;
 		// TODO Auto-generated method stub
 		
 	}

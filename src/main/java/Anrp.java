@@ -246,7 +246,7 @@ public class Anrp {
 	
 	public static void testImageOCR()
 	{
-		 Vector<CvSeq> squares;
+		/* Vector<CvSeq> squares;
 		 final IplImage image = cvLoadImage("tmp/afine1.jpg");
 		 Vector<String> numbers;
 		 
@@ -257,12 +257,10 @@ public class Anrp {
 		 OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
 						
 		 original.showImage(converter.convert(image));			
-		 original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
+		 original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);*/
 	}
 	
-	public static void main(String[] args) throws IOException {
-
-		
+	public static void main(String[] args) throws IOException {		
 		
 		//testImage();		
 		if (args.length == 0) {
@@ -276,10 +274,8 @@ public class Anrp {
 			}
 			else {
 				String fn = args[0]; 
-				FounderMgr mgr = FounderMgr.getInstance();
-				mgr.prepareEnv();	
-				
-				
+				FounderMgr mgr = new FounderMgr();
+				mgr.prepareEnv();									
 				
 				if (args.length == 2 && args[1].equals("-v")) {
 					mgr.verbose = true;
@@ -303,9 +299,9 @@ public class Anrp {
 					System.exit(0); 
 				 }
 					 
-				 mgr.println("Start processing");
-				 		 
-				 Recognizer.process(fn);				 
+				 // Распознаем
+				 mgr.println("Start processing");				 		 
+				 Recognizer.process(fn, mgr);				 
 				 Vector<String> numbers = mgr.getNumbers();
 				 
 				 mgr.println("Found " + mgr.plates.size() + " plates");

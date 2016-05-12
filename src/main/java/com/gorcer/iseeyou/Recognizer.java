@@ -167,7 +167,7 @@ public class Recognizer {
 		return squares; 
 	}
 	
-	public static Vector<String> RecognizeNumber(IplImage src) {
+	public static Vector<String> RecognizeNumber(IplImage src, FounderMgr mgr) {
 		
 		
 		String outText = null;
@@ -176,8 +176,6 @@ public class Recognizer {
 		PIX pixImage;
 		Matcher m;
 		Vector<String> result = new Vector<String>();
-		
-		FounderMgr mgr = FounderMgr.getInstance();
 
 		  Pattern p = Pattern.compile("^[ABCEHKMOPTXY]\\d{3}[ABCEHKMOPTXY]{2}\\d{2,3}$");
 		  /*outText="K095CX77";	 
@@ -185,7 +183,7 @@ public class Recognizer {
 		  System.out.println(" m:"+m.matches());
 		  return "";*/
 		  
-		  String tmpPath = FounderMgr.getInstance().getPersonalTmpPath();
+		  String tmpPath = mgr.getPersonalTmpPath();
 		  
 		  RecognizeConfig config = new RecognizeConfig();
 		  
@@ -296,7 +294,7 @@ public class Recognizer {
 	}
 
 
-	public static Vector<CvSeq> findSquares( IplImage src)
+	public static Vector<CvSeq> findSquares( IplImage src, FounderMgr mgr)
 	{
 		Vector<CvSeq> squares = new Vector<CvSeq>();
 		Vector<CvSeq> tmpSquares = new Vector<CvSeq>();
@@ -328,7 +326,7 @@ public class Recognizer {
 			
 			prepareImg = prepareImage(src, storage, config);
 						
-			cvSaveImage(FounderMgr.getInstance().getPersonalTmpPath()+"/filtered"+config.n+".jpg", prepareImg);
+			cvSaveImage(mgr.getPersonalTmpPath()+"/filtered"+config.n+".jpg", prepareImg);
 			
 			tmpSquares = findSquaresFiltered(prepareImg, src, storage, config);
 			
@@ -353,34 +351,35 @@ public class Recognizer {
 
 	}
 	
-	public static void process(String filename)
+	public static void process(String filename, FounderMgr mgr)
 	{
-		IplImage tmpImage;
+		IplImage tmpImage;		
 		
-		FounderMgr mgr = FounderMgr.getInstance(); 
 		mgr.start();
 		
 		final IplImage image = cvLoadImage(filename);
 		
 		mgr.sourceImage = image;
 		tmpImage = cvCloneImage(image);
-		Vector<CvSeq> squares = findSquares( tmpImage );
+		Vector<CvSeq> squares = findSquares( tmpImage, mgr);
 		mgr.println("Found " + squares.size() + " squares");
 		optimizeSquares(squares);
 		mgr.println("Squares after optimization " + squares.size() + " squares");
-		Vector<String> numbers = findNumbers(squares, tmpImage);
-		mgr.println("Found " + numbers.size() + " numbers: "+ numbers.toString());
+		mgr.plates = findNumbers(squares, tmpImage, mgr);
+		mgr.println("Found " + mgr.plates.size() + " plates");
+		mgr.println("Founded numbers top: " + mgr.getNumStat());		
 		
 		mgr.finish();
+		mgr=null;
 	}
 	
-	private static Vector<String> findNumbers(Vector<CvSeq> plates, IplImage original) {
+	private static Vector<PlateInfo> findNumbers(Vector<CvSeq> plates, IplImage original, FounderMgr mgr) {
 		
 		CvRect rect;
 		CvSeq approx;
 		IplImage tmpImage;
 		Vector<String> recognized;
-		Vector<String> numbers = new Vector<String>();
+		Vector<PlateInfo> result = new Vector<PlateInfo>();
 		
 		for (int i=0; i<plates.size(); i++) {
 		
@@ -388,19 +387,18 @@ public class Recognizer {
 			rect=cvBoundingRect(approx, 1);
 			
 			tmpImage = Transform(rect, approx, original, i);
-	 		recognized = RecognizeNumber(tmpImage);
-	 		numbers.addAll(recognized);
+	 		recognized = RecognizeNumber(tmpImage, mgr); 		
 	 		
 	 		// Сохраняем информацию о найденном номере
 	 		PlateInfo plate = new PlateInfo();
-	 		if (FounderMgr.getInstance().verbose) //т.к. жрет память
+	 		if (mgr.verbose) //т.к. жрет память
 	 			plate.plateImage = cvCloneImage(tmpImage);
 	 		plate.plateCoords = approx;
-	 		plate.numbers = recognized;                        	 		
-	 		FounderMgr.getInstance().addPlate(plate);
+	 		plate.numbers = recognized;   
+	 		result.add(plate);	 		
 		}
 		
-		return numbers;
+		return result;
 	}
 
 

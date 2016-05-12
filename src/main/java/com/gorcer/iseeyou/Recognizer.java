@@ -365,12 +365,12 @@ public class Recognizer {
 		final IplImage image = cvLoadImage(filename);
 		
 		mgr.sourceImage = image;
-		tmpImage = cvCloneImage(image);
-		Vector<CvSeq> squares = findPolys( tmpImage);
+		//tmpImage = cvCloneImage(image);
+		Vector<CvSeq> squares = findPolys( image);
 		mgr.println("Found " + squares.size() + " polygons");
 		optimizeSquares(squares);
 		mgr.println("Polygons after optimization " + squares.size() + " polygons");
-		mgr.plates = findNumbers(squares, tmpImage);
+		mgr.plates = findNumbers(squares, image);
 		mgr.println("Found " + mgr.plates.size() + " plates");
 		mgr.println("Found numbers: " + mgr.getNumStat());		
 		

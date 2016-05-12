@@ -12,6 +12,8 @@ import java.util.Vector;
 import org.bytedeco.javacpp.opencv_core.CvSeq;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacpp.tesseract.TessBaseAPI;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 /**
  * Клас для 
@@ -190,5 +192,42 @@ public class FounderMgr {
 		if (verbose == true) {
 			System.out.println(text);
 		}
+	}
+	
+	public String getJSON() {
+		// Формируем JSON ответ
+		 String num = getBestNum();
+		 JSONObject resultJSON = new JSONObject();
+		 if (num == null) {			 
+			 resultJSON.put("result", "empty");						 			 
+		 } else {			 
+			// Лучший вариант
+			JSONObject dataJSON = new JSONObject();
+			dataJSON.put("popularNumber", num);
+			
+			// Все планки
+			JSONArray platesJSON = new JSONArray();
+			for (PlateInfo plate : plates) {
+				platesJSON.add(plate.plateImagePath);
+			}
+			dataJSON.put("plates", platesJSON);
+			
+			// Все номера
+			JSONArray numbersJSON = new JSONArray();					
+			for (Map.Entry<String,Integer> entry : getNumStat().entrySet()) {
+				JSONObject numberJSON = new JSONObject();
+				numberJSON.put("number", entry.getKey());
+				numberJSON.put("cnt", entry.getValue());
+				numbersJSON.add(numberJSON);
+			}
+			dataJSON.put("numbers", numbersJSON);
+	
+			
+			resultJSON.put("result", "success");
+			resultJSON.put("data", dataJSON);
+		 	
+		 }
+		 
+		 return resultJSON.toString();
 	}
 }

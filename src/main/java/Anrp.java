@@ -317,45 +317,7 @@ public class Anrp {
 				
 				// System.out.println("Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / 1024/1024);
 				 
-				 // Формируем JSON ответ
-				 String num = mgr.getBestNum();
-				 if (num == null) {
-					 
-					 JSONObject resultJSON = new JSONObject();
-					 resultJSON.put("result", "empty");					 
-					 System.out.print(resultJSON.toString());
-					 
-				 } else {
-					 
-					JSONObject resultJSON = new JSONObject();
-					
-					// Лучший вариант
-					JSONObject dataJSON = new JSONObject();
-					dataJSON.put("popularNumber", num);
-					
-					// Все планки
-					JSONArray platesJSON = new JSONArray();
-					for (PlateInfo plate : mgr.plates) {
-						platesJSON.add(plate.plateImagePath);
-					}
-					dataJSON.put("plates", platesJSON);
-					
-					// Все номера
-					JSONArray numbersJSON = new JSONArray();					
-					for (Map.Entry<String,Integer> entry : mgr.getNumStat().entrySet()) {
-						JSONObject numberJSON = new JSONObject();
-						numberJSON.put("number", entry.getKey());
-						numberJSON.put("cnt", entry.getValue());
-						numbersJSON.add(numberJSON);
-					}
-					dataJSON.put("numbers", numbersJSON);
-			
-					
-					resultJSON.put("result", "success");
-					resultJSON.put("data", dataJSON);
-				 	System.out.print(resultJSON.toString());
-				 	
-				 }
+				 System.out.println(mgr.getJSON());
 				 mgr.destroy();
 			}
 		}

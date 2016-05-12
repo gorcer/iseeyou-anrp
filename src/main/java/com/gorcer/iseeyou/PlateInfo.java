@@ -11,4 +11,11 @@ public class PlateInfo {
 	public CvSeq plateCoords;
 	public Vector<String> numbers;
 	
+	public String addPlateImage(IplImage img) {
+		
+		
+		
+		return null;
+		
+	}
 }

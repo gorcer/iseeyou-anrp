@@ -27,8 +27,8 @@ public class FounderMgr {
 	public Vector<PlateInfo> plates, rawPlates;
 	public long startTime, endTime;
 	
-	public String tmpPath = "/tmp/iSeeYouAnrp";
-	private String tmpPathPostfix;
+	public static String tmpPath = "/tmp/iSeeYouAnrp";
+	private static String tmpPathPostfix;
 	
 	public IplImage sourceImage;
 	public TessBaseAPI api;
@@ -86,7 +86,7 @@ public class FounderMgr {
 	}
 	
 	// Получение персональной папки для хранения временных файлов инстанса
-	public String getPersonalTmpPath() {
+	public static String getPersonalTmpPath() {
 		return tmpPath + "/" + tmpPathPostfix;
 	}
 	

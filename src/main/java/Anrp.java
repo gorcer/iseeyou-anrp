@@ -14,6 +14,7 @@ import java.util.Vector;
 
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.FrameGrabber.Exception;
+import org.json.simple.JSONObject;
 
 import com.gorcer.iseeyou.FounderMgr;
 import com.gorcer.iseeyou.Recognizer;
@@ -309,11 +310,27 @@ public class Anrp {
 				 mgr.println("Processing finished, " + mgr.getWorkTime() + " sec. remained");				 
 				
 				 String num = mgr.getBestNum();
-				 if (num == null)
-					 System.out.print("empty");
-				 else
-					 System.out.print(num);
-				 
+				 if (num == null) {
+					 
+					 JSONObject resultJSON = new JSONObject();
+					 resultJSON.put("result", "empty");					 
+					 System.out.print(resultJSON.toString());
+					 
+				 } else {
+					 
+					JSONObject resultJSON = new JSONObject();
+					
+					// Лучший вариант
+					JSONObject dataJSON = new JSONObject();
+					dataJSON.put("popularVariant", num);
+					
+					// Все планки
+					
+					resultJSON.put("result", "success");
+					resultJSON.put("data", dataJSON);
+				 	System.out.print(resultJSON.toString());
+				 	
+				 }
 				 mgr.destroy();
 			}
 		}

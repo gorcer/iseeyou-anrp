@@ -31,7 +31,7 @@ public class FounderMgr {
 	private static String tmpPathPostfix;
 	
 	public IplImage sourceImage;
-	public TessBaseAPI api;
+	public static TessBaseAPI api;
 	
 	public boolean verbose=false;
 	
@@ -180,6 +180,7 @@ public class FounderMgr {
 	public void destroy() {
 		plates=null;
 		rawPlates=null;
+		api=null;
 		//self = null;
 		// TODO Auto-generated method stub
 		

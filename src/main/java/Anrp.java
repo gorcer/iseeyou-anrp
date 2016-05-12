@@ -10,13 +10,17 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.NumberFormat;
+import java.util.Map;
 import java.util.Vector;
 
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.FrameGrabber.Exception;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import com.gorcer.iseeyou.FounderMgr;
+import com.gorcer.iseeyou.PlateInfo;
 import com.gorcer.iseeyou.Recognizer;
 
 import org.bytedeco.javacpp.*;
@@ -262,7 +266,10 @@ public class Anrp {
 	}
 	
 	public static void main(String[] args) throws IOException {		
-		
+		 Runtime runtime = Runtime.getRuntime();
+		 NumberFormat format = NumberFormat.getInstance();
+		 
+		 
 		//testImage();		
 		if (args.length == 0) {
 			System.out.println("Error: Undefined image to recognize, type -h to help");
@@ -281,6 +288,7 @@ public class Anrp {
 				if (args.length == 2 && args[1].equals("-v")) {
 					mgr.verbose = true;
 				}
+				// System.out.println("Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / 1024/1024);
 				
 				// Если url
 				if (fn.toLowerCase().contains("http") && (fn.toLowerCase().contains("jpg") || fn.toLowerCase().contains("jpeg"))) {
@@ -305,10 +313,11 @@ public class Anrp {
 				 Recognizer.process(fn, mgr);				 
 				 Vector<String> numbers = mgr.getNumbers();
 				 
-				 mgr.println("Found " + mgr.plates.size() + " plates");
-				 mgr.println("The number is " + mgr.getBestNum());
 				 mgr.println("Processing finished, " + mgr.getWorkTime() + " sec. remained");				 
 				
+				// System.out.println("Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / 1024/1024);
+				 
+				 // Формируем JSON ответ
 				 String num = mgr.getBestNum();
 				 if (num == null) {
 					 
@@ -322,9 +331,25 @@ public class Anrp {
 					
 					// Лучший вариант
 					JSONObject dataJSON = new JSONObject();
-					dataJSON.put("popularVariant", num);
+					dataJSON.put("popularNumber", num);
 					
 					// Все планки
+					JSONArray platesJSON = new JSONArray();
+					for (PlateInfo plate : mgr.plates) {
+						platesJSON.add(plate.plateImagePath);
+					}
+					dataJSON.put("plates", platesJSON);
+					
+					// Все номера
+					JSONArray numbersJSON = new JSONArray();					
+					for (Map.Entry<String,Integer> entry : mgr.getNumStat().entrySet()) {
+						JSONObject numberJSON = new JSONObject();
+						numberJSON.put("number", entry.getKey());
+						numberJSON.put("cnt", entry.getValue());
+						numbersJSON.add(numberJSON);
+					}
+					dataJSON.put("numbers", numbersJSON);
+			
 					
 					resultJSON.put("result", "success");
 					resultJSON.put("data", dataJSON);

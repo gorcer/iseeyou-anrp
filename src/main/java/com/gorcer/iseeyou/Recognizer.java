@@ -35,7 +35,7 @@ public class Recognizer {
 	{	
 	    IplImage gray = cvCreateImage( cvGetSize(src), IPL_DEPTH_8U, 1 );
 	    cvConvertImage(src, gray, 0);
-	   // cvSaveImage("tmp/src.jpg", src);    
+	    //cvSaveImage("tmp/src.jpg", src);    
 	    
 	    // Уменьшает в два раза, затем увеличивает, в результате мелкие детали исчезают
 	    if (config.doPyr)
@@ -105,7 +105,7 @@ public class Recognizer {
 	}
 	
 	
-	public static Vector<CvSeq> findSquaresFiltered(IplImage img, IplImage original, CvMemStorage storage, RecognizeConfig config)
+	public static Vector<CvSeq> findPolysFiltered(IplImage img, IplImage original, CvMemStorage storage, RecognizeConfig config)
 	{
 		Vector<CvSeq> squares = new Vector<CvSeq>();
 		CvSeq contours = new CvSeq(null);
@@ -167,7 +167,7 @@ public class Recognizer {
 		return squares; 
 	}
 	
-	public static Vector<String> RecognizeNumber(IplImage src, FounderMgr mgr) {
+	public static Vector<String> RecognizeNumber(IplImage src) {
 		
 		
 		String outText = null;
@@ -183,7 +183,7 @@ public class Recognizer {
 		  System.out.println(" m:"+m.matches());
 		  return "";*/
 		  
-		  String tmpPath = mgr.getPersonalTmpPath();
+		  String tmpPath = FounderMgr.getPersonalTmpPath();
 		  
 		  RecognizeConfig config = new RecognizeConfig();
 		  
@@ -203,8 +203,8 @@ public class Recognizer {
 				pixImage = pixRead(tmpPath + "/plate.jpg");
 				
 				// Распознаем
-				mgr.api.SetImage(pixImage);
-				recText = mgr.api.GetUTF8Text();
+				FounderMgr.api.SetImage(pixImage);
+				recText = FounderMgr.api.GetUTF8Text();
 				
 				// Для отладки распознавалки, потом убрать
 				/*PlateInfo rawPlate = new PlateInfo();
@@ -294,7 +294,7 @@ public class Recognizer {
 	}
 
 
-	public static Vector<CvSeq> findSquares( IplImage src)
+	public static Vector<CvSeq> findPolys( IplImage src)
 	{
 		Vector<CvSeq> squares = new Vector<CvSeq>();
 		Vector<CvSeq> tmpSquares = new Vector<CvSeq>();
@@ -328,7 +328,7 @@ public class Recognizer {
 						
 			cvSaveImage(FounderMgr.getPersonalTmpPath()+"/filtered"+config.n+".jpg", prepareImg);
 			
-			tmpSquares = findSquaresFiltered(prepareImg, src, storage, config);
+			tmpSquares = findPolysFiltered(prepareImg, src, storage, config);
 			
 			squares.addAll(tmpSquares);
 		}
@@ -351,6 +351,11 @@ public class Recognizer {
 
 	}
 	
+	/**
+	 * Обработка изображения
+	 * @param filename
+	 * @param mgr
+	 */
 	public static void process(String filename, FounderMgr mgr)
 	{
 		IplImage tmpImage;		
@@ -361,19 +366,25 @@ public class Recognizer {
 		
 		mgr.sourceImage = image;
 		tmpImage = cvCloneImage(image);
-		Vector<CvSeq> squares = findSquares( tmpImage);
-		mgr.println("Found " + squares.size() + " squares");
+		Vector<CvSeq> squares = findPolys( tmpImage);
+		mgr.println("Found " + squares.size() + " polygons");
 		optimizeSquares(squares);
-		mgr.println("Squares after optimization " + squares.size() + " squares");
-		mgr.plates = findNumbers(squares, tmpImage, mgr);
+		mgr.println("Polygons after optimization " + squares.size() + " polygons");
+		mgr.plates = findNumbers(squares, tmpImage);
 		mgr.println("Found " + mgr.plates.size() + " plates");
-		mgr.println("Founded numbers top: " + mgr.getNumStat());		
+		mgr.println("Found numbers: " + mgr.getNumStat());		
 		
 		mgr.finish();
 		mgr=null;
 	}
 	
-	private static Vector<PlateInfo> findNumbers(Vector<CvSeq> plates, IplImage original) {
+	/**
+	 * Перебираем найденные многоугольники и пытаемся найти в них номерные знаки
+	 * @param poly
+	 * @param original
+	 * @return
+	 */
+	private static Vector<PlateInfo> findNumbers(Vector<CvSeq> poly, IplImage original) {
 		
 		CvRect rect;
 		CvSeq approx;
@@ -381,21 +392,22 @@ public class Recognizer {
 		Vector<String> recognized;
 		Vector<PlateInfo> result = new Vector<PlateInfo>();
 		
-		for (int i=0; i<plates.size(); i++) {
+		for (int i=0; i<poly.size(); i++) {
 		
-			approx = plates.get(i);
+			approx = poly.get(i);
 			rect=cvBoundingRect(approx, 1);
 			
 			tmpImage = Transform(rect, approx, original, i);
-	 		recognized = RecognizeNumber(tmpImage, mgr); 		
+	 		recognized = RecognizeNumber(tmpImage); 		
 	 		
 	 		// Сохраняем информацию о найденном номере
-	 		PlateInfo plate = new PlateInfo();	
-	 		plate.addPlateImage(tmpImage);
-	 		//plate.plateImage = cvCloneImage(tmpImage);
-	 		plate.plateCoords = approx;
-	 		plate.numbers = recognized;   
-	 		result.add(plate);	 		
+	 		if (recognized.size() > 0) {
+		 		PlateInfo plate = new PlateInfo();	
+		 		plate.addPlateImage(tmpImage);
+		 		plate.plateCoords = approx;
+		 		plate.numbers = recognized;  
+		 		result.add(plate);
+	 		}
 		}
 		
 		return result;

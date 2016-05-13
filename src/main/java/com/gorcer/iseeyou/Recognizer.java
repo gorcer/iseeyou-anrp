@@ -111,16 +111,12 @@ public class Recognizer {
 		CvSeq contours = new CvSeq(null);
 		CvSeq approx;
 		double maxCosine;	
-		Vector<String> recognized = new Vector<String>();
 		double cosine;
 		
 		IplImage tmp = cvCloneImage(img);
 		//cvSaveImage("tmp/ok-"+config.n+"-"+config.Thresh+".jpg",   img);
 		cvFindContours(tmp, storage, contours, Loader.sizeof(CvContour.class), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
-		
-		
-		int cn=config.n;
-		int pos=0;
+			
 		// Перебираем контуры
 		while (contours != null && !contours.isNull()) 
 		{
@@ -163,7 +159,7 @@ public class Recognizer {
 			
 			contours = contours.h_next();
 		}
-		
+		approx=null;
 		return squares; 
 	}
 	
@@ -252,6 +248,8 @@ public class Recognizer {
 	private static Vector<CvPoint> getDirectPoints(CvSeq poly, CvRect rect) {
 		// TODO Auto-generated method stub
 		CvPoint pts = new CvPoint(4);
+		CvPoint tmpPoint = new CvPoint();
+		
 		//CvPoint ptsNew = new CvPoint(4);
 		cvCvtSeqToArray(poly, pts, CV_WHOLE_SEQ);
 		
@@ -260,11 +258,17 @@ public class Recognizer {
 		int x,y, minJ=0;
 		double min=0, s;
 		
+		tmpPoint = new CvPoint();
+		ptsNew.add(tmpPoint.x(rect.x()).y(rect.y()));
 		
-		ptsNew.add(new CvPoint().x(rect.x()).y(rect.y()));
-		ptsNew.add(new CvPoint().x(rect.x()+rect.width()).y(rect.y()));
-		ptsNew.add(new CvPoint().x(rect.x()+rect.width()).y(rect.y()+rect.height()));
-		ptsNew.add(new CvPoint().x(rect.x()).y(rect.y()+rect.height()));
+		tmpPoint = new CvPoint();
+		ptsNew.add(tmpPoint.x(rect.x()+rect.width()).y(rect.y()));
+		
+		tmpPoint = new CvPoint();
+		ptsNew.add(tmpPoint.x(rect.x()+rect.width()).y(rect.y()+rect.height()));
+		
+		tmpPoint = new CvPoint();
+		ptsNew.add(tmpPoint.x(rect.x()).y(rect.y()+rect.height()));
 		
 		
 		
@@ -288,7 +292,7 @@ public class Recognizer {
 		
 		ptsNew.get(i).x(pts.position(minJ).x());
 		ptsNew.get(i).y(pts.position(minJ).y());		
-		}
+		}		
 		
 		return ptsNew;
 	}
@@ -358,14 +362,11 @@ public class Recognizer {
 	 */
 	public static void process(String filename, FounderMgr mgr)
 	{
-		IplImage tmpImage;		
-		
 		mgr.start();
 		
 		final IplImage image = cvLoadImage(filename);
 		
-		mgr.sourceImage = image;
-		//tmpImage = cvCloneImage(image);
+		mgr.sourceImage = image;	
 		Vector<CvSeq> squares = findPolys( image);
 		mgr.println("Found " + squares.size() + " polygons");
 		optimizeSquares(squares);
@@ -466,7 +467,7 @@ public class Recognizer {
 	        
 	        
 	        
-	        CvMat warp_mat = cvCreateMat(2, 3, CV_32FC1);
+	        //CvMat warp_mat = cvCreateMat(2, 3, CV_32FC1);
 
 	        CvPoint pts = new CvPoint(4);
 	        for(int i = 0; i < squares.size(); i ++  )

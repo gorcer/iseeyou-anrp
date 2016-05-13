@@ -10,17 +10,13 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.NumberFormat;
-import java.util.Map;
 import java.util.Vector;
 
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.FrameGrabber.Exception;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 import com.gorcer.iseeyou.FounderMgr;
-import com.gorcer.iseeyou.PlateInfo;
+
 import com.gorcer.iseeyou.Recognizer;
 
 import org.bytedeco.javacpp.*;
@@ -266,10 +262,9 @@ public class Anrp {
 	}
 	
 	public static void main(String[] args) throws IOException {		
-		 Runtime runtime = Runtime.getRuntime();
-		 NumberFormat format = NumberFormat.getInstance();
 		 
-		 
+		//for(int i=0;i<10;i++) {
+		
 		//testImage();		
 		if (args.length == 0) {
 			System.out.println("Error: Undefined image to recognize, type -h to help");
@@ -295,7 +290,7 @@ public class Anrp {
 					mgr.println("Try to download file " + fn);
 					URL website = new URL(fn);
 					ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-					fn = mgr.getPersonalTmpPath() + "/downloadedvc.jpg";
+					fn = FounderMgr.getPersonalTmpPath() + "/downloadedvc.jpg";
 					FileOutputStream fos = new FileOutputStream(fn);
 					fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 					fos.close();					
@@ -311,7 +306,6 @@ public class Anrp {
 				 // Распознаем
 				 mgr.println("Start processing");				 		 
 				 Recognizer.process(fn, mgr);				 
-				 Vector<String> numbers = mgr.getNumbers();
 				 
 				 mgr.println("Processing finished, " + mgr.getWorkTime() + " sec. remained");				 
 				
@@ -322,11 +316,19 @@ public class Anrp {
 			}
 		}
 		
+		/*try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		}*/
+		
 	}
 	
 	public static void main2(String[] args) {
 		
-		 Vector<CvSeq> squares;// = new Vector();
+		 //Vector<CvSeq> squares;// = new Vector();
 		
 		//Load image img1 as IplImage
 		final IplImage image = cvLoadImage("Images/Test2.jpg");

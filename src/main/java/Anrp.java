@@ -3,8 +3,10 @@ import static com.googlecode.javacv.cpp.opencv_highgui.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 */
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -21,10 +23,14 @@ import com.gorcer.iseeyou.Recognizer;
 
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.javacpp.opencv_objdetect.CvHaarClassifierCascade;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 import static org.bytedeco.javacpp.opencv_imgcodecs.*;
+import static org.bytedeco.javacpp.opencv_calib3d.*;
+import static org.bytedeco.javacpp.opencv_objdetect.*;
+
 /*import org.bytedeco.javacv.cpp.CanvasFrame;
 import org.bytedeco.javacv.cpp.opencv_core.*;
 import org.bytedeco.javacv.cpp.opencv_core.CvSeq;
@@ -261,7 +267,60 @@ public class Anrp {
 		 original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);*/
 	}
 	
-	public static void main(String[] args) throws IOException {		
+	public static void main(String[] args) throws IOException {
+		String fn = args[0]; 
+		IplImage src = cvLoadImage(fn);
+		IplImage grayImage    = IplImage.create(src.width(), src.height(), IPL_DEPTH_8U, 1);
+		
+		Loader.load(opencv_objdetect.class);
+		
+		String classifierName = null;
+		URL url = new URL("https://raw.githubusercontent.com/Itseez/opencv/master/data/haarcascades/haarcascade_russian_plate_number.xml");
+        File file = Loader.extractResource(url, null, "classifier", ".xml");
+        file.deleteOnExit();
+        classifierName = file.getAbsolutePath();
+        System.out.println(classifierName);
+        CvHaarClassifierCascade classifier = new CvHaarClassifierCascade(cvLoad(classifierName));
+        if (classifier.isNull()) {
+            System.err.println("Error loading classifier file \"" + classifierName + "\".");
+            System.exit(1);
+        }
+        CvMemStorage storage = CvMemStorage.create();
+        cvCvtColor(src, grayImage, CV_BGR2GRAY);
+        
+        CvSeq plates = cvHaarDetectObjects(grayImage, classifier, storage,
+                1.1, 3, CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_DO_ROUGH_SEARCH);
+        
+        System.out.println( plates.total());
+        
+		cvClearMemStorage(storage);
+
+		
+
+		for(int i = 0; i < plates.total(); i++){
+			CvRect r = new CvRect(cvGetSeqElem(plates, i));
+			cvRectangle (
+					src,
+					cvPoint(r.x(), r.y()),
+					cvPoint(r.width() + r.x(), r.height() + r.y()),
+					CvScalar.RED,
+					2,
+					CV_AA,
+					0);
+
+		}
+		
+		final CanvasFrame original = new CanvasFrame("Ori");
+		OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
+		
+		original.showImage(converter.convert(src));
+		//smooth.showImage(gray);
+		original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
+		
+		
+	}
+	
+	public static void main_w(String[] args) throws IOException {		
 		 
 		//for(int i=0;i<10;i++) {
 		

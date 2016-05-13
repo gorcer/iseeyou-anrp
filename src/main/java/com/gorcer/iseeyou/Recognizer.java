@@ -52,7 +52,7 @@ public class Recognizer {
 	    if (config.doSmooth) {
 	    	// сглаживаем исходную картинку
 	        cvSmooth(gray, gray);
-	        cvSaveImage("artifacts/smooth.jpg", gray); 
+	     //   cvSaveImage("artifacts/smooth.jpg", gray); 
 	    }
 
 	    if (config.doDilate)
@@ -61,8 +61,10 @@ public class Recognizer {
 	    if (config.doCanny)	    
 	    	 cvCanny(gray, gray, 0, config.Thresh, 3);
 	 	
-	    if (config.doThreshold)
+	    if (config.doThreshold) {
 	    	cvThreshold(gray, gray, config.Thresh, 255, CV_THRESH_BINARY);
+	    	cvAdaptiveThreshold(gray, gray, config.Thresh, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 7, 1);
+	    }
 
 		return gray;
 	}
@@ -116,7 +118,7 @@ public class Recognizer {
 		IplImage tmp = cvCloneImage(img);
 		//cvSaveImage("tmp/ok-"+config.n+"-"+config.Thresh+".jpg",   img);
 		cvFindContours(tmp, storage, contours, Loader.sizeof(CvContour.class), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
-			
+		
 		// Перебираем контуры
 		while (contours != null && !contours.isNull()) 
 		{
@@ -125,6 +127,9 @@ public class Recognizer {
 			if (contours.elem_size() > 0) 
 			{
                 approx = cvApproxPoly(contours, Loader.sizeof(CvContour.class),storage, CV_POLY_APPROX_DP, cvContourPerimeter(contours)*config.ApproxAccuracy, 0);
+                
+                /*if (approx.total() == 4 && Math.abs(cvContourArea(approx, CV_WHOLE_SEQ, 0)) > config.minContourArea)
+                	System.out.println(cvCheckContourConvexity(approx));*/
                 
                 if (approx.total() == 4 // Четыре стороны
                     && Math.abs(cvContourArea(approx, CV_WHOLE_SEQ, 0)) > config.minContourArea
@@ -141,16 +146,16 @@ public class Recognizer {
                         maxCosine = Math.max(maxCosine, cosine);
                      }
                 	 
-                	 if( maxCosine < config.maxCosine )	{
+                	 if( maxCosine < config.maxCosine)	{
                          CvRect rect=cvBoundingRect(approx, 1);
-                         if (                        		 
+                         if (                      		 
                         		 //rect.width()*rect.height()<config.maxSquare && // Макс площадь
-                        		 rect.width()>rect.height()  // Ширина больше высоты
-                        		 /*&& Math.abs(((float)x.height()/x.width())-config.maxAspectRatio)<0.1*/ 
-                        		 && (rect.width()/(float)img.width()<0.9) && (rect.height()/(float)img.height()<0.9) // не более 90% размеров изображения
+                        		 rect.width()>rect.height() &&  // Ширина больше высоты
+                        		 //&& Math.abs(((float)x.height()/x.width())-config.maxAspectRatio)<0.1 
+                        		  (rect.width()/(float)img.width()<0.9) && (rect.height()/(float)img.height()<0.9) // не более 90% размеров изображения
                         		 )	{  
                         	 
-                        	 			squares.add(approx);
+                        	 			squares.add(approx);                        	 			
                          			}
                          //else System.out.println("False w : "+x.width()+" x h : "+x.height()+" = "+x.width()*x.height());
                 	 }
@@ -215,7 +220,7 @@ public class Recognizer {
 					outText = outText.replaceAll("[^ABCEHKMOPTXY0-9]", "");
 					//rawPlate.numbers.add(outText);
 					m = p.matcher(outText);  
-	
+					//System.out.println(outText);
 					// Если текст соответствует маске номера
 					if (m.matches() == true) {
 						
@@ -228,8 +233,7 @@ public class Recognizer {
 				//mgr.rawPlates.add(rawPlate);
 				//System.out.println("["+i+","+j+"]"+" num:["+outText+"] m:"+m.matches());
 		  }
-			
-		  storage=null;
+		  cvClearMemStorage(storage);		  
 		  outText=null;
 		  recText=null;
 		  pixImage=null;
@@ -306,8 +310,8 @@ public class Recognizer {
 		IplImage prepareImg;
 		
 		RecognizeConfig config = new RecognizeConfig();
-		for (int j=0;j<1;j++)
-		for (int i=0;i<70;i++)
+		for (int j=0;j<2;j++)
+		for (int i=0;i<100;i++)
 		{
 			if (j == 0)
 			{
@@ -325,6 +329,7 @@ public class Recognizer {
 				config.doCanny=false;
 				config.doDilate=false;
 				config.doPyr=false;
+				config.doSmooth=true;
 			}
 			config.n=j*100+i;
 			
@@ -339,8 +344,8 @@ public class Recognizer {
 		//cvReleaseImage(prepareImg);
 		//System.out.println("Total found "+squares.size()+" squares");	
 		
+		cvClearMemStorage(storage);
 		tmpSquares=null;
-		storage=null;
 		prepareImg=null;
 		
 		return squares;

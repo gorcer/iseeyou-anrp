@@ -374,6 +374,20 @@ public class Recognizer {
 		Vector<CvSeq> squares = findPolys( image);
 		mgr.println("Found " + squares.size() + " polygons");
 		optimizeSquares(squares);
+		
+		// есть проблема, не все вычищает с первого раза, поэтому пока так. Исследовать на примере https://s.auto.drom.ru/5/sales/photos/19233/19232478/151658366.jpg
+		optimizeSquares(squares);
+		
+		/* для отладки
+		CvSeq approx;
+		for (int i=0; i<squares.size(); i++) {
+			approx = squares.get(i);
+			CvPoint pts = new CvPoint(4);
+			cvCvtSeqToArray(approx, pts, CV_WHOLE_SEQ);
+			System.out.println(pts.toString());
+		}
+		*/
+		
 		mgr.println("Polygons after optimization " + squares.size() + " polygons");
 		mgr.plates = findNumbers(squares, image);
 		mgr.println("Found " + mgr.plates.size() + " plates");

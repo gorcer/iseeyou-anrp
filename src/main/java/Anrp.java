@@ -268,18 +268,18 @@ public class Anrp {
 	}
 	
 	public static void main_haar(String[] args) throws IOException {
-		String fn = args[0]; 
+		String fn = "./Images/Test2.jpg"; 
 		IplImage src = cvLoadImage(fn);
 		IplImage grayImage    = IplImage.create(src.width(), src.height(), IPL_DEPTH_8U, 1);
 		
 		Loader.load(opencv_objdetect.class);
 		
 		String classifierName = null;
-		URL url = new URL("https://raw.githubusercontent.com/Itseez/opencv/master/data/haarcascades/haarcascade_russian_plate_number.xml");
+		URL url = new URL("https://raw.githubusercontent.com/Itseez/opencv/master/data/haarcascades/haarcascade_licence_plate_rus_16stages.xml");
         File file = Loader.extractResource(url, null, "classifier", ".xml");
         file.deleteOnExit();
         classifierName = file.getAbsolutePath();
-        System.out.println(classifierName);
+
         CvHaarClassifierCascade classifier = new CvHaarClassifierCascade(cvLoad(classifierName));
         if (classifier.isNull()) {
             System.err.println("Error loading classifier file \"" + classifierName + "\".");

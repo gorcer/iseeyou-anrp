@@ -267,7 +267,7 @@ public class Anrp {
 		 original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);*/
 	}
 	
-	public static void main(String[] args) throws IOException {
+	public static void main_haar(String[] args) throws IOException {
 		String fn = args[0]; 
 		IplImage src = cvLoadImage(fn);
 		IplImage grayImage    = IplImage.create(src.width(), src.height(), IPL_DEPTH_8U, 1);
@@ -320,7 +320,7 @@ public class Anrp {
 		
 	}
 	
-	public static void main_w(String[] args) throws IOException {		
+	public static void main(String[] args) throws IOException {		
 		 
 		//for(int i=0;i<10;i++) {
 		

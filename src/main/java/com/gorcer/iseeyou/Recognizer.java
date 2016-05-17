@@ -100,8 +100,8 @@ public class Recognizer {
 		//cvSaveImage(tmpPath + "/afine"+n+".jpg",  tmp);
 		cvResetImageROI(img);
 		
-		warp_mat=null;
-		pts=null;
+		/*warp_mat=null;
+		pts=null;*/
 		
 		return(tmp);
 	}
@@ -151,10 +151,9 @@ public class Recognizer {
                          if (                      		 
                         		 //rect.width()*rect.height()<config.maxSquare && // Макс площадь
                         		 rect.width()>rect.height() &&  // Ширина больше высоты
-                        		 //&& Math.abs(((float)x.height()/x.width())-config.maxAspectRatio)<0.1 
+                        		 //Math.abs(((float)x.height()/x.width())-config.maxAspectRatio)<0.1 && 
                         		  (rect.width()/(float)img.width()<0.9) && (rect.height()/(float)img.height()<0.9) // не более 90% размеров изображения
                         		 )	{  
-                        	 
                         	 			squares.add(approx);                        	 			
                          			}
                          //else System.out.println("False w : "+x.width()+" x h : "+x.height()+" = "+x.width()*x.height());
@@ -307,7 +306,7 @@ public class Recognizer {
 		Vector<CvSeq> squares = new Vector<CvSeq>();
 		Vector<CvSeq> tmpSquares = new Vector<CvSeq>();
 		CvMemStorage storage = CvMemStorage.create();
-		IplImage prepareImg;
+		IplImage prepareImg = null;
 		
 		RecognizeConfig config = new RecognizeConfig();
 		for (int j=0;j<2;j++)
@@ -341,7 +340,7 @@ public class Recognizer {
 			
 			squares.addAll(tmpSquares);
 		}
-		//cvReleaseImage(prepareImg);
+		cvReleaseImage(prepareImg);
 		//System.out.println("Total found "+squares.size()+" squares");	
 		
 		cvClearMemStorage(storage);
@@ -393,14 +392,16 @@ public class Recognizer {
 	private static Vector<PlateInfo> findNumbers(Vector<CvSeq> poly, IplImage original) {
 		
 		CvRect rect;
-		CvSeq approx;
 		IplImage tmpImage;
 		Vector<String> recognized;
 		Vector<PlateInfo> result = new Vector<PlateInfo>();
 		
+		CvSeq approx;
 		for (int i=0; i<poly.size(); i++) {
-		
 			approx = poly.get(i);
+			CvPoint pts = new CvPoint(4);
+			cvCvtSeqToArray(approx, pts, CV_WHOLE_SEQ);
+			
 			rect=cvBoundingRect(approx, 1);
 			
 			tmpImage = Transform(rect, approx, original, i);
@@ -453,7 +454,6 @@ public class Recognizer {
 				if (equalPoints == 4) {
 					plates.remove(j);
 				}
-				
 		}
 	}
 

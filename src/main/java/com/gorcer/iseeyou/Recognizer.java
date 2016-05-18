@@ -41,12 +41,13 @@ public class Recognizer {
 	    if (config.doPyr)
 	    {
 	    	CvSize sz = cvSize(gray.width() & -2, gray.height() & -2);
-	    	IplImage pyr = cvCreateImage(cvSize(sz.width()/2, sz.height()/2), gray.depth(), gray.nChannels());	    	
+	    	IplImage pyr = cvCreateImage(cvSize(sz.width()/2, sz.height()/2), gray.depth(), gray.nChannels());
+	    	
 	    	cvPyrDown(gray, pyr, CV_GAUSSIAN_5x5);
 	    	// Fatal Error тут был
+	    	cvReleaseImage(gray);
+	    	gray = cvCreateImage(cvSize(2*pyr.width(), 2*pyr.height()), pyr.depth(), pyr.nChannels());          
 	    	cvPyrUp(pyr, gray, CV_GAUSSIAN_5x5);
-	    	
-	    	cvReleaseImage(pyr);
 	    }
 	    
 	    if (config.doSmooth) {
@@ -318,7 +319,7 @@ public class Recognizer {
 				//config.doDilate=true;
 				config.doCanny=true;				
 				config.Thresh=config.minThresh*1+i*10;
-				config.doPyr=false; //true
+				config.doPyr=true; //true
 				config.doSmooth=true;
 			}
 			else

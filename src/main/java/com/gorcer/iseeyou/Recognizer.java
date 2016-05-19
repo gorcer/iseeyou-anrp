@@ -9,13 +9,17 @@ import java.util.regex.Pattern;
 
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacpp.*;
+import org.bytedeco.javacpp.opencv_core.CvMemStorage;
+import org.bytedeco.javacpp.opencv_core.CvRect;
 import org.bytedeco.javacpp.opencv_core.CvSeq;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
+import static org.bytedeco.javacpp.opencv_objdetect.CV_HAAR_DO_ROUGH_SEARCH;
+import static org.bytedeco.javacpp.opencv_objdetect.CV_HAAR_FIND_BIGGEST_OBJECT;
 import static org.bytedeco.javacpp.opencv_imgcodecs.*;
-
+import static org.bytedeco.javacpp.helper.opencv_objdetect.cvHaarDetectObjects;
 import static org.bytedeco.javacpp.lept.*;
 
 public class Recognizer {
@@ -96,6 +100,7 @@ public class Recognizer {
 		JavaCV.getPerspectiveTransform(srcArr, new double[]{0,0,tmp.width(),0,tmp.width(),tmp.height(),0,tmp.height()}, warp_mat);
 		
 		//cvGetAffineTransform(srcArr, new float[]{0,0,52,0,20,40}, warp_mat);
+		
 		cvSetImageROI(img,rect);
 		cvWarpPerspective(img, tmp, warp_mat);		
 		//cvSaveImage(tmpPath + "/afine"+n+".jpg",  tmp);
@@ -107,6 +112,50 @@ public class Recognizer {
 		return(tmp);
 	}
 	
+	public static Vector<CvSeq> findHaarFiltered(IplImage img) {
+		
+		Vector<CvSeq> result = new Vector<CvSeq>();
+		
+		// Готовим изображение
+		CvMemStorage storage3 = CvMemStorage.create();		
+		RecognizeConfig config = new RecognizeConfig();
+		config.doThreshold=false;
+		config.doCanny=false;				
+		config.Thresh=config.minThresh*4;
+		config.doPyr=false; 
+		config.doSmooth=false;
+		config.doDilate=true;
+		IplImage prepareImg = prepareImage(img, storage3, config);	
+		cvClearMemStorage(storage3);
+		
+		// Применяем каскад
+		CvMemStorage storage = CvMemStorage.create();	       
+        CvSeq plates = cvHaarDetectObjects(prepareImg, FounderMgr.haar, storage,
+                1.1, 3, CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_DO_ROUGH_SEARCH);
+		cvClearMemStorage(storage);
+		
+		
+		// Собираем многоугольники
+		CvRect r;
+		CvMemStorage storage2 = CvMemStorage.create();  
+		for(int i = 0; i < plates.total(); i++){
+			r = new CvRect(cvGetSeqElem(plates, i));
+			CvSeq approx =cvCreateSeq(CV_SEQ_ELTYPE_POINT,  Loader.sizeof(CvSeq.class), Loader.sizeof(CvPoint.class), storage2);		
+
+			cvSeqPush(approx, new CvPoint(r.x(), r.y()));
+			cvSeqPush(approx, new CvPoint(r.x()+r.width(), r.y()));
+			cvSeqPush(approx, new CvPoint(r.x()+r.width(), r.y()+r.height()));
+			cvSeqPush(approx, new CvPoint(r.x(), r.y()+r.height()));
+			
+			result.add(approx);
+		}		
+		cvClearMemStorage(storage2);
+		
+		
+		
+		return result;
+		
+	}
 	
 	public static Vector<CvSeq> findPolysFiltered(IplImage img, IplImage original, CvMemStorage storage, RecognizeConfig config)
 	{
@@ -139,7 +188,7 @@ public class Recognizer {
                 {
                 	
                 	 maxCosine = 0;
-                	 // Перебираем все углы
+                	 // Перебираем все углы, ищем максимальный
                 	 for( int j = 2; j < 5; j++ )
                      {
                 		// find the maximum cosine of the angle between joint edges
@@ -155,7 +204,7 @@ public class Recognizer {
                         		 //Math.abs(((float)x.height()/x.width())-config.maxAspectRatio)<0.1 && 
                         		  (rect.width()/(float)img.width()<0.9) && (rect.height()/(float)img.height()<0.9) // не более 90% размеров изображения
                         		 )	{  
-                        	 			squares.add(approx);                        	 			
+                        	 			squares.add(approx);    
                          			}
                          //else System.out.println("False w : "+x.width()+" x h : "+x.height()+" = "+x.width()*x.height());
                 	 }
@@ -320,7 +369,7 @@ public class Recognizer {
 				config.doCanny=true;				
 				config.Thresh=config.minThresh*1+i*10;
 				config.doPyr=true; //true
-				config.doSmooth=true;
+				config.doSmooth=false;
 			}
 			else
 			{
@@ -335,9 +384,9 @@ public class Recognizer {
 			
 			prepareImg = prepareImage(src, storage, config);
 						
-			cvSaveImage(FounderMgr.getPersonalTmpPath()+"/filtered"+config.n+".jpg", prepareImg);
+			//cvSaveImage(FounderMgr.getPersonalTmpPath()+"/filtered"+config.n+".jpg", prepareImg);
 			
-			tmpSquares = findPolysFiltered(prepareImg, src, storage, config);
+			tmpSquares = findPolysFiltered(prepareImg, src, storage, config);			
 			
 			squares.addAll(tmpSquares);
 		}
@@ -372,25 +421,31 @@ public class Recognizer {
 		final IplImage image = cvLoadImage(filename);
 		
 		mgr.sourceImage = image;	
-		Vector<CvSeq> squares = findPolys( image);
-		mgr.println("Found " + squares.size() + " polygons");
-		optimizeSquares(squares);
+		Vector<CvSeq> polys = new Vector<CvSeq>(); 
+		polys = findPolys( image);
+		mgr.println("Found " + polys.size() + " polygons via FindPoly");
 		
-		// есть проблема, не все вычищает с первого раза, поэтому пока так. Исследовать на примере https://s.auto.drom.ru/5/sales/photos/19233/19232478/151658366.jpg
-		optimizeSquares(squares);
+		Vector<CvSeq> haarPolys = findHaarFiltered(image);
+		mgr.println("Found " + haarPolys.size() + " polygons via Haar Cascade");
+		polys.addAll(haarPolys);
 		
-		/* для отладки
-		CvSeq approx;
-		for (int i=0; i<squares.size(); i++) {
-			approx = squares.get(i);
+		 //для отладки
+		/*CvSeq approx;
+		for (int i=0; i<haarPolys.size(); i++) {
+			approx = haarPolys.get(i);
 			CvPoint pts = new CvPoint(4);
 			cvCvtSeqToArray(approx, pts, CV_WHOLE_SEQ);
 			System.out.println(pts.toString());
-		}
-		*/
+		}*/		
 		
-		mgr.println("Polygons after optimization " + squares.size() + " polygons");
-		mgr.plates = findNumbers(squares, image);
+		
+		
+		optimizeSquares(polys);
+		// есть проблема, не все вычищает с первого раза, поэтому пока так. Исследовать на примере https://s.auto.drom.ru/5/sales/photos/19233/19232478/151658366.jpg
+		optimizeSquares(polys);
+		
+		mgr.println("Polygons after optimization " + polys.size() + " polygons");
+		mgr.plates = findNumbers(polys, image);
 		mgr.println("Found " + mgr.plates.size() + " plates");
 		mgr.println("Found numbers: " + mgr.getNumStat());		
 		

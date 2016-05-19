@@ -268,7 +268,7 @@ public class Anrp {
 	}
 	
 	public static void main_haar(String[] args) throws IOException {
-		String fn = "./Images/downloadedvc.jpg"; 
+		String fn = "./Images/Test7.jpg"; 
 		IplImage src = cvLoadImage(fn);
 		IplImage grayImage    = IplImage.create(src.width(), src.height(), IPL_DEPTH_8U, 1);
 		
@@ -295,10 +295,9 @@ public class Anrp {
         
 		cvClearMemStorage(storage);
 
-		
-
 		for(int i = 0; i < plates.total(); i++){
 			CvRect r = new CvRect(cvGetSeqElem(plates, i));
+			System.out.println(r);
 			cvRectangle (
 					src,
 					cvPoint(r.x(), r.y()),

@@ -238,6 +238,9 @@ public class FounderMgr {
 			}
 			dataJSON.put("plates", platesJSON);
 			
+			// Лучшая планка - первая попавшаяся			
+			dataJSON.put("bestPlate", plates.get(0).plateImagePath);
+			
 			// Все номера
 			JSONArray numbersJSON = new JSONArray();					
 			for (Map.Entry<String,Integer> entry : getNumStat().entrySet()) {

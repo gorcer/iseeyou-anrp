@@ -5,7 +5,7 @@ import shutil, uuid, hashlib
 import csv, time
 
 '''
-Script to analyze recognizer quality, use drom image base
+Script to analyze recognizer quality, use image base
 '''
 
 # Variables
@@ -25,6 +25,8 @@ startTime=time.time()
 
 
 #initReport
+if (os.path.exists(resultPath) is False):
+                    os.makedirs( resultPath, 0775 )
 with open(reportFile, "w") as report:
     report.write("<html><head>")
     report.write("<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css' integrity='sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7' crossorigin='anonymous'>")
@@ -43,10 +45,10 @@ with open(dataFileName, 'rb') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='|')
         for row in reader:
 	    total=total+1
+	    print "N%d	Current efficiency: %d%%" % (total,(round((1.0*plates/total)*100)))
 	    photoId=row[0]
 	    bullId=row[1]
 	    url=row[2]
-
 	    print url
 	    status="empty"
 
@@ -68,7 +70,7 @@ with open(dataFileName, 'rb') as csvfile:
 	    # process result if success
 	    if (result["result"] == "success" and len(result["data"]["bestPlate"])>0):
                 
-		imagePath = "%s_%s/" % (bullId, photoId)
+		imagePath = "%s/" % photoId
 		platePath = resultPath + imagePath
 		if (os.path.exists(platePath) is False):
                     os.makedirs( platePath, 0775 )
@@ -97,7 +99,7 @@ with open(dataFileName, 'rb') as csvfile:
 endTime=time.time()
 elapsed = (endTime-startTime)
 with open(reportFile, "a") as report:
-        report.write("<br/><p>Total images processed: %d<br/>\n Total plates found: %d <br/>\n Errors count: %d <br/>\n Elapsed time (s.): %d</p></body></html>" % (total, plates, errors, elapsed))
+        report.write("<br/><p>Total images processed: %d<br/>\n Total plates found: %d (you need to calculate real plates count) <br/>\n Errors count: %d <br/>\n Elapsed time (s.): %d</p></body></html>" % (total, plates, errors, elapsed))
         report.write("\n")
 
 sys.exit();

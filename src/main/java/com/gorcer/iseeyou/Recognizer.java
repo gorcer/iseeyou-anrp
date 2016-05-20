@@ -16,8 +16,7 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
-import static org.bytedeco.javacpp.opencv_objdetect.CV_HAAR_DO_ROUGH_SEARCH;
-import static org.bytedeco.javacpp.opencv_objdetect.CV_HAAR_FIND_BIGGEST_OBJECT;
+import static org.bytedeco.javacpp.opencv_objdetect.*;
 import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 import static org.bytedeco.javacpp.helper.opencv_objdetect.cvHaarDetectObjects;
 import static org.bytedeco.javacpp.lept.*;
@@ -131,7 +130,7 @@ public class Recognizer {
 		// Применяем каскад
 		CvMemStorage storage = CvMemStorage.create();	       
         CvSeq plates = cvHaarDetectObjects(prepareImg, FounderMgr.haar, storage,
-                1.1, 3, CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_DO_ROUGH_SEARCH);
+                1.1, 0, CV_HAAR_DO_CANNY_PRUNING | CV_HAAR_SCALE_IMAGE);
 		cvClearMemStorage(storage);
 		
 		

@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Vector;
 
 import org.bytedeco.javacpp.Loader;
@@ -60,9 +61,9 @@ public class FounderMgr {
 	public boolean prepareEnv() {
 		
 		// uncomment in prod
-		//tmpPathPostfix = UUID.randomUUID().toString();
+		tmpPathPostfix = UUID.randomUUID().toString();
 		
-		tmpPathPostfix = "local";
+		//tmpPathPostfix = "local";
 		
 		//System.out.println("Prepare env " + tmpPathPostfix);
 		// Создаем временное хранилище

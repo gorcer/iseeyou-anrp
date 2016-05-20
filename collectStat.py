@@ -95,9 +95,9 @@ with open(dataFileName, 'rb') as csvfile:
                 errors=errors+1
 	    print "result: " + status
 endTime=time.time()
-elapsed = (endTime-starTtime)/60
+elapsed = (endTime-startTime)
 with open(reportFile, "a") as report:
-        report.write("<br/><p>Total images processed: %d<br/>\n Total plates found: %d <br/>\n Errors count: %d <br/>\n Elapsed time (m.): %d</p></body></html>" % (total, plates, errors, elapsed))
+        report.write("<br/><p>Total images processed: %d<br/>\n Total plates found: %d <br/>\n Errors count: %d <br/>\n Elapsed time (s.): %d</p></body></html>" % (total, plates, errors, elapsed))
         report.write("\n")
 
 sys.exit();

@@ -130,7 +130,7 @@ public class Recognizer {
 		// Применяем каскад
 		CvMemStorage storage = CvMemStorage.create();	       
         CvSeq plates = cvHaarDetectObjects(prepareImg, FounderMgr.haar, storage,
-                1.1, 0, CV_HAAR_DO_CANNY_PRUNING | CV_HAAR_SCALE_IMAGE);
+                1.1, 0, CV_HAAR_DO_CANNY_PRUNING);
 		cvClearMemStorage(storage);
 		
 		
@@ -139,14 +139,18 @@ public class Recognizer {
 		CvMemStorage storage2 = CvMemStorage.create();  
 		for(int i = 0; i < plates.total(); i++){
 			r = new CvRect(cvGetSeqElem(plates, i));
-			CvSeq approx =cvCreateSeq(CV_SEQ_ELTYPE_POINT,  Loader.sizeof(CvSeq.class), Loader.sizeof(CvPoint.class), storage2);		
-
-			cvSeqPush(approx, new CvPoint(r.x(), r.y()));
-			cvSeqPush(approx, new CvPoint(r.x()+r.width(), r.y()));
-			cvSeqPush(approx, new CvPoint(r.x()+r.width(), r.y()+r.height()));
-			cvSeqPush(approx, new CvPoint(r.x(), r.y()+r.height()));
-			
-			result.add(approx);
+			if (r.width()>r.height() &&  // Ширина больше высоты
+					(r.width()/(float)img.width()<0.9) && (r.height()/(float)img.height()<0.9) // не более 90% размеров изображения
+					) {
+							CvSeq approx =cvCreateSeq(CV_SEQ_ELTYPE_POINT,  Loader.sizeof(CvSeq.class), Loader.sizeof(CvPoint.class), storage2);		
+				
+							cvSeqPush(approx, new CvPoint(r.x(), r.y()));
+							cvSeqPush(approx, new CvPoint(r.x()+r.width(), r.y()));
+							cvSeqPush(approx, new CvPoint(r.x()+r.width(), r.y()+r.height()));
+							cvSeqPush(approx, new CvPoint(r.x(), r.y()+r.height()));
+							
+							result.add(approx);
+					}
 		}		
 		cvClearMemStorage(storage2);
 		
@@ -436,7 +440,6 @@ public class Recognizer {
 			cvCvtSeqToArray(approx, pts, CV_WHOLE_SEQ);
 			System.out.println(pts.toString());
 		}*/		
-		
 		
 		
 		optimizeSquares(polys);

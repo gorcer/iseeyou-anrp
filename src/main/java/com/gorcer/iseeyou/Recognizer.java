@@ -428,10 +428,10 @@ public class Recognizer {
 		polys = findPolys( image);
 		mgr.println("Found " + polys.size() + " polygons via FindPoly");
 		
-		Vector<CvSeq> haarPolys = findHaarFiltered(image);
+		/*Vector<CvSeq> haarPolys = findHaarFiltered(image);
 		mgr.println("Found " + haarPolys.size() + " polygons via Haar Cascade");
 		polys.addAll(haarPolys);
-		
+		*/
 		 //для отладки
 		/*CvSeq approx;
 		for (int i=0; i<haarPolys.size(); i++) {

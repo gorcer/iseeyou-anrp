@@ -111,12 +111,12 @@ public class Recognizer {
 		return(tmp);
 	}
 	
-	public static Vector<CvSeq> findHaarFiltered(IplImage img) {
+	public static Vector<CvSeq> findHaarFiltered(IplImage img, CvMemStorage mainStorage) {
 		
 		Vector<CvSeq> result = new Vector<CvSeq>();
 		
 		// Готовим изображение
-		CvMemStorage storage3 = CvMemStorage.create();		
+		CvMemStorage prepareStorage = CvMemStorage.create();		
 		RecognizeConfig config = new RecognizeConfig();
 		config.doThreshold=false;
 		config.doCanny=false;				
@@ -124,25 +124,24 @@ public class Recognizer {
 		config.doPyr=false; 
 		config.doSmooth=false;
 		config.doDilate=true;
-		IplImage prepareImg = prepareImage(img, storage3, config);	
-		cvClearMemStorage(storage3);
+		IplImage prepareImg = prepareImage(img, prepareStorage, config);	
+		cvClearMemStorage(prepareStorage);
 		
 		// Применяем каскад
 		CvMemStorage storage = CvMemStorage.create();	       
         CvSeq plates = cvHaarDetectObjects(prepareImg, FounderMgr.haar, storage,
                 1.1, 0, CV_HAAR_DO_CANNY_PRUNING);
-		cvClearMemStorage(storage);
+		
 		
 		
 		// Собираем многоугольники
-		CvRect r;
-		CvMemStorage storage2 = CvMemStorage.create();  
+		CvRect r; 
 		for(int i = 0; i < plates.total(); i++){
 			r = new CvRect(cvGetSeqElem(plates, i));
 			if (r.width()>r.height() &&  // Ширина больше высоты
 					(r.width()/(float)img.width()<0.9) && (r.height()/(float)img.height()<0.9) // не более 90% размеров изображения
 					) {
-							CvSeq approx =cvCreateSeq(CV_SEQ_ELTYPE_POINT,  Loader.sizeof(CvSeq.class), Loader.sizeof(CvPoint.class), storage2);		
+							CvSeq approx =cvCreateSeq(CV_SEQ_ELTYPE_POINT,  Loader.sizeof(CvSeq.class), Loader.sizeof(CvPoint.class), mainStorage);		
 				
 							cvSeqPush(approx, new CvPoint(r.x(), r.y()));
 							cvSeqPush(approx, new CvPoint(r.x()+r.width(), r.y()));
@@ -152,7 +151,8 @@ public class Recognizer {
 							result.add(approx);
 					}
 		}		
-		cvClearMemStorage(storage2);
+		
+		cvClearMemStorage(storage);
 		
 		
 		
@@ -240,7 +240,7 @@ public class Recognizer {
 		  
 		  RecognizeConfig config = new RecognizeConfig();
 		  
-		  for (int i=0;i<50;i++) {
+		  for (int i=0;i<20;i++) {
 		  
 			config.doThreshold=true;
 			config.doDilate=false;
@@ -419,6 +419,7 @@ public class Recognizer {
 	 */
 	public static void process(String filename, FounderMgr mgr)
 	{
+		CvMemStorage mainStorage = CvMemStorage.create();
 		mgr.start();
 		
 		final IplImage image = cvLoadImage(filename);
@@ -428,40 +429,47 @@ public class Recognizer {
 		polys = findPolys( image);
 		mgr.println("Found " + polys.size() + " polygons via FindPoly");
 		
-		/*Vector<CvSeq> haarPolys = findHaarFiltered(image);
+		Vector<CvSeq> haarPolys = findHaarFiltered(image, mainStorage);
 		mgr.println("Found " + haarPolys.size() + " polygons via Haar Cascade");
 		polys.addAll(haarPolys);
-		*/
-		 //для отладки
-		/*CvSeq approx;
-		for (int i=0; i<haarPolys.size(); i++) {
-			approx = haarPolys.get(i);
-			CvPoint pts = new CvPoint(4);
-			cvCvtSeqToArray(approx, pts, CV_WHOLE_SEQ);
-			System.out.println(pts.toString());
-		}*/		
 		
-		
+
 		optimizeSquares(polys);
+		
 		// есть проблема, не все вычищает с первого раза, поэтому пока так. Исследовать на примере https://s.auto.drom.ru/5/sales/photos/19233/19232478/151658366.jpg
 		optimizeSquares(polys);
 		
+		 //для отладки
+		/*CvSeq approx;
+		for (int i=0; i<polys.size(); i++) {
+			approx = polys.get(i);
+			CvPoint pts = new CvPoint(4);
+			cvCvtSeqToArray(approx, pts, CV_WHOLE_SEQ);
+			System.out.println(pts.toString());
+		}*/
+		
 		mgr.println("Polygons after optimization " + polys.size() + " polygons");
+		
+		CvPoint pts = new CvPoint(4);
+		cvCvtSeqToArray(polys.get(1), pts, CV_WHOLE_SEQ);
+		
 		mgr.plates = findNumbers(polys, image);
 		mgr.println("Found " + mgr.plates.size() + " plates");
 		mgr.println("Found numbers: " + mgr.getNumStat());		
 		
 		mgr.finish();
 		mgr=null;
+		
+		cvClearMemStorage(mainStorage);
 	}
 	
 	/**
 	 * Перебираем найденные многоугольники и пытаемся найти в них номерные знаки
-	 * @param poly
+	 * @param polys
 	 * @param original
 	 * @return
 	 */
-	private static Vector<PlateInfo> findNumbers(Vector<CvSeq> poly, IplImage original) {
+	private static Vector<PlateInfo> findNumbers(Vector<CvSeq> polys, IplImage original) {
 		
 		CvRect rect;
 		IplImage tmpImage;
@@ -469,16 +477,13 @@ public class Recognizer {
 		Vector<PlateInfo> result = new Vector<PlateInfo>();
 		
 		CvSeq approx;
-		for (int i=0; i<poly.size(); i++) {
-			approx = poly.get(i);
-			CvPoint pts = new CvPoint(4);
-			cvCvtSeqToArray(approx, pts, CV_WHOLE_SEQ);
+		for (int i=0; i<polys.size(); i++) {
 			
+			approx = polys.get(i);	
+		
 			rect=cvBoundingRect(approx, 1);
-			
 			tmpImage = Transform(rect, approx, original, i);
 	 		recognized = RecognizeNumber(tmpImage); 		
-	 		
 	 		// Сохраняем информацию о найденном номере
 	 		if (recognized.size() > 0) {
 		 		PlateInfo plate = new PlateInfo();	

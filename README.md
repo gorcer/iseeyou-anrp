@@ -9,7 +9,7 @@ iseeyou-anrp
 Клонируем репозиторий
 git clone https://github.com/gorcer/iseeyou-anrp.git
 
-cd iseeyou-anrp
+cd ./iseeyou-anrp
 
 Ставим tesserat
 

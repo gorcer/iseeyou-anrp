@@ -335,12 +335,13 @@ public class Anrp {
 			}
 			else {
 				String fn = args[0]; 
-				FounderMgr mgr = new FounderMgr();
-				mgr.prepareEnv();									
+				FounderMgr mgr = new FounderMgr();											
 				
 				if (args.length == 2 && args[1].equals("-v")) {
 					mgr.verbose = true;
 				}
+				
+				mgr.prepareEnv();	
 				// System.out.println("Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / 1024/1024);
 				
 				// Если url

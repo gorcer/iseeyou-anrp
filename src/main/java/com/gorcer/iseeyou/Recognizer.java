@@ -128,8 +128,8 @@ public class Recognizer {
 		cvClearMemStorage(prepareStorage);
 		
 		// Применяем каскад
-		CvMemStorage storage = CvMemStorage.create();	       
-        CvSeq plates = cvHaarDetectObjects(prepareImg, FounderMgr.haar, storage,
+		//CvMemStorage storage = CvMemStorage.create();	       
+        CvSeq plates = cvHaarDetectObjects(prepareImg, FounderMgr.haar, mainStorage,
                 1.1, 0, CV_HAAR_DO_CANNY_PRUNING);
 		
 		
@@ -138,9 +138,11 @@ public class Recognizer {
 		CvRect r; 
 		for(int i = 0; i < plates.total(); i++){
 			r = new CvRect(cvGetSeqElem(plates, i));
-			if (r.width()>r.height() &&  // Ширина больше высоты
-					(r.width()/(float)img.width()<0.9) && (r.height()/(float)img.height()<0.9) // не более 90% размеров изображения
+			if (r.width()>r.height()  // Ширина больше высоты
+					&& (r.width()/(float)img.width()<0.9) && (r.height()/(float)img.height()<0.9) // не более 90% размеров изображения
+					&& (r.width()/r.height() >3) // ширина больше высоты минимум в три раза
 					) {
+				
 							CvSeq approx =cvCreateSeq(CV_SEQ_ELTYPE_POINT,  Loader.sizeof(CvSeq.class), Loader.sizeof(CvPoint.class), mainStorage);		
 				
 							cvSeqPush(approx, new CvPoint(r.x(), r.y()));
@@ -152,7 +154,7 @@ public class Recognizer {
 					}
 		}		
 		
-		cvClearMemStorage(storage);
+		//cvClearMemStorage(storage);
 		
 		
 		
@@ -201,11 +203,12 @@ public class Recognizer {
                 	 
                 	 if( maxCosine < config.maxCosine)	{
                          CvRect rect=cvBoundingRect(approx, 1);
-                         if (                      		 
+                         if (    // @refact нужно отрефакторить и сделать общую функцию validRect                  		 
                         		 //rect.width()*rect.height()<config.maxSquare && // Макс площадь
                         		 rect.width()>rect.height() &&  // Ширина больше высоты
                         		 //Math.abs(((float)x.height()/x.width())-config.maxAspectRatio)<0.1 && 
                         		  (rect.width()/(float)img.width()<0.9) && (rect.height()/(float)img.height()<0.9) // не более 90% размеров изображения
+                        		  && (rect.width()/rect.height() >3) // ширина больше высоты минимум в три раза
                         		 )	{  
                         	 			squares.add(approx);    
                          			}
@@ -354,11 +357,11 @@ public class Recognizer {
 	}
 
 
-	public static Vector<CvSeq> findPolys( IplImage src)
+	public static Vector<CvSeq> findPolys( IplImage src, CvMemStorage mainStorage)
 	{
 		Vector<CvSeq> squares = new Vector<CvSeq>();
 		Vector<CvSeq> tmpSquares = new Vector<CvSeq>();
-		CvMemStorage storage = CvMemStorage.create();
+		
 		IplImage prepareImg = null;
 		
 		RecognizeConfig config = new RecognizeConfig();
@@ -385,18 +388,17 @@ public class Recognizer {
 			}
 			config.n=j*100+i;
 			
-			prepareImg = prepareImage(src, storage, config);
+			prepareImg = prepareImage(src, mainStorage, config);
 						
 			//cvSaveImage(FounderMgr.getPersonalTmpPath()+"/filtered"+config.n+".jpg", prepareImg);
 			
-			tmpSquares = findPolysFiltered(prepareImg, src, storage, config);			
+			tmpSquares = findPolysFiltered(prepareImg, src, mainStorage, config);			
 			
 			squares.addAll(tmpSquares);
 		}
 		cvReleaseImage(prepareImg);
 		//System.out.println("Total found "+squares.size()+" squares");	
 		
-		cvClearMemStorage(storage);
 		tmpSquares=null;
 		prepareImg=null;
 		
@@ -426,18 +428,22 @@ public class Recognizer {
 		
 		mgr.sourceImage = image;	
 		Vector<CvSeq> polys = new Vector<CvSeq>(); 
-		polys = findPolys( image);
+		polys = findPolys( image, mainStorage );
 		mgr.println("Found " + polys.size() + " polygons via FindPoly");
 		
 		Vector<CvSeq> haarPolys = findHaarFiltered(image, mainStorage);
 		mgr.println("Found " + haarPolys.size() + " polygons via Haar Cascade");
 		polys.addAll(haarPolys);
-		
 
 		optimizeSquares(polys);
-		
 		// есть проблема, не все вычищает с первого раза, поэтому пока так. Исследовать на примере https://s.auto.drom.ru/5/sales/photos/19233/19232478/151658366.jpg
 		optimizeSquares(polys);
+		
+		if (mgr.verbose) {
+			IplImage test = cvCloneImage(image);
+			drawSquares(test, polys);
+			cvSaveImage(FounderMgr.getPersonalTmpPath()+ "/drawSquares.jpg",test);
+		}
 		
 		 //для отладки
 		/*CvSeq approx;
@@ -491,6 +497,11 @@ public class Recognizer {
 		 		plate.plateCoords = approx;
 		 		plate.numbers = recognized;  
 		 		result.add(plate);
+	 		}
+	 		
+	 		// Для ускорения ограничиваем число найденных планок двумя
+	 		if (result.size() > 2) {
+	 			break;
 	 		}
 		}
 		

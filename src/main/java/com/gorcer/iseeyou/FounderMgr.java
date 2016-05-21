@@ -3,16 +3,21 @@ package com.gorcer.iseeyou;
 import static org.bytedeco.javacpp.opencv_core.cvLoad;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.Vector;
 
+import org.apache.tomcat.jni.Time;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.opencv_core.CvSeq;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -60,8 +65,11 @@ public class FounderMgr {
 	
 	public boolean prepareEnv() {
 		
+		//clear old tmp paths
+		clearOldTmpPaths();
+		
 		// uncomment in prod
-		tmpPathPostfix = UUID.randomUUID().toString();
+		tmpPathPostfix = "anrp-"+UUID.randomUUID().toString();
 		
 		//tmpPathPostfix = "local";
 		
@@ -114,6 +122,33 @@ public class FounderMgr {
 		return true;		
 	}
 	
+	private void clearOldTmpPaths() {
+		
+		File folder = new File(tmpPath);
+		File[] listOfFiles = folder.listFiles();
+
+		    for (int i = 0; i < listOfFiles.length; i++) {
+		      if (listOfFiles[i].isDirectory() && listOfFiles[i].getName().contains("anrp-")) {
+		    	  String fn = tmpPath+"/"+listOfFiles[i].getName();
+		    	  Path path = Paths.get(fn);
+		    	    BasicFileAttributes attr;
+		    	    try {
+			    	    attr = Files.readAttributes(path, BasicFileAttributes.class);
+			    	    long ageM = ((new Date().getTime()) - attr.creationTime().toMillis())/1000/60;
+			    	    // Удаляем папки возрастом более часа
+			    	    if (ageM > 60) {
+			    	    	FileUtils.deleteDirectory(new File(fn));
+			    	    	println("Remove old temp path " + fn);
+			    	    }
+		    	    } catch (IOException e) {
+		    	    System.out.println("oops error! " + e.getMessage());
+		    	    }
+		      }
+		    }
+		
+		
+	}
+
 	// Получение персональной папки для хранения временных файлов инстанса
 	public static String getPersonalTmpPath() {
 		return tmpPath + "/" + tmpPathPostfix;

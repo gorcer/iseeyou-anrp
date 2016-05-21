@@ -1,15 +1,22 @@
 package com.gorcer.iseeyou;
 
+import static org.bytedeco.javacpp.opencv_core.cvLoad;
+
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Vector;
 
+import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.opencv_core.CvSeq;
 import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.javacpp.opencv_objdetect.CvHaarClassifierCascade;
 import org.bytedeco.javacpp.tesseract.TessBaseAPI;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -33,6 +40,7 @@ public class FounderMgr {
 	
 	public IplImage sourceImage;
 	public static TessBaseAPI api;
+	public static CvHaarClassifierCascade haar;
 	
 	public boolean verbose=false;
 	
@@ -53,9 +61,9 @@ public class FounderMgr {
 	public boolean prepareEnv() {
 		
 		// uncomment in prod
-		//tmpPathPostfix = UUID.randomUUID().toString();
+		tmpPathPostfix = UUID.randomUUID().toString();
 		
-		tmpPathPostfix = "local";
+		//tmpPathPostfix = "local";
 		
 		//System.out.println("Prepare env " + tmpPathPostfix);
 		// Создаем временное хранилище
@@ -82,6 +90,26 @@ public class FounderMgr {
 		  	System.err.println("Could not initialize tesseract.");
             return false;
 		  }
+		
+		// Инициализация классификатора Хаара
+		String classifierName = null;
+		File file=null;
+		try {
+			URL url = new URL("https://raw.githubusercontent.com/Itseez/opencv/master/data/haarcascades/haarcascade_licence_plate_rus_16stages.xml");	        
+			file = Loader.extractResource(url, null, "classifier", ".xml");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.err.println("Error loading classifier from url");
+            System.exit(1);
+		}
+        file.deleteOnExit();
+        classifierName = file.getAbsolutePath();		
+		haar = new CvHaarClassifierCascade(cvLoad(classifierName));
+        if (haar.isNull()) {
+            System.err.println("Error loading classifier file \"" + classifierName + "\".");
+            System.exit(1);
+        }
 		
 		return true;		
 	}
@@ -210,6 +238,9 @@ public class FounderMgr {
 				platesJSON.add(plate.plateImagePath);
 			}
 			dataJSON.put("plates", platesJSON);
+			
+			// Лучшая планка - первая попавшаяся			
+			dataJSON.put("bestPlate", plates.get(0).plateImagePath);
 			
 			// Все номера
 			JSONArray numbersJSON = new JSONArray();					

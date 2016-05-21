@@ -456,9 +456,6 @@ public class Recognizer {
 		
 		mgr.println("Polygons after optimization " + polys.size() + " polygons");
 		
-		CvPoint pts = new CvPoint(4);
-		cvCvtSeqToArray(polys.get(1), pts, CV_WHOLE_SEQ);
-		
 		mgr.plates = findNumbers(polys, image);
 		mgr.println("Found " + mgr.plates.size() + " plates");
 		mgr.println("Found numbers: " + mgr.getNumStat());		

@@ -1,5 +1,7 @@
 *.class
 iSeeYouAnrp.jar
+resultData/
+*.csv
 
 # Package Files #
 *.jar

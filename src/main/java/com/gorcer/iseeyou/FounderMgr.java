@@ -3,7 +3,6 @@ package com.gorcer.iseeyou;
 import static org.bytedeco.javacpp.opencv_core.cvLoad;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -16,8 +15,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.Vector;
 
-import org.apache.tomcat.jni.Time;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.opencv_core.CvSeq;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -25,6 +22,7 @@ import org.bytedeco.javacpp.opencv_objdetect.CvHaarClassifierCascade;
 import org.bytedeco.javacpp.tesseract.TessBaseAPI;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Клас для 

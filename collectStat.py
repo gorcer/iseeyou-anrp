@@ -44,8 +44,9 @@ with open(reportFile, "w") as report:
 with open(dataFileName, 'rb') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quotechar='|')
         for row in reader:
+	    if (total > 0):
+		print "N%d	Current efficiency: %d%%" % (total,(round((1.0*plates/total)*100)))
 	    total=total+1
-	    print "N%d	Current efficiency: %d%%" % (total,(round((1.0*plates/total)*100)))
 	    photoId=row[0]
 	    bullId=row[1]
 	    url=row[2]

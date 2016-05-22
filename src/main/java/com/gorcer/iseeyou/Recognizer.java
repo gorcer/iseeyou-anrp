@@ -449,9 +449,11 @@ public class Recognizer {
 		mgr.println("Found " + haarPolys.size() + " polygons via Haar Cascade");
 		polys.addAll(haarPolys);
 
-		optimizeSquares(polys);
-		// есть проблема, не все вычищает с первого раза, поэтому пока так. Исследовать на примере https://s.auto.drom.ru/5/sales/photos/19233/19232478/151658366.jpg
-		optimizeSquares(polys);
+		if (polys.size() > 40) {
+			optimizeSquares(polys);
+			// есть проблема, не все вычищает с первого раза, поэтому пока так. Исследовать на примере https://s.auto.drom.ru/5/sales/photos/19233/19232478/151658366.jpg
+			optimizeSquares(polys);
+		}
 		
 		if (mgr.verbose) {
 			IplImage test = cvCloneImage(image);
@@ -557,7 +559,7 @@ public class Recognizer {
 					pI = new CvPoint(cvGetSeqElem(plateI, n));
 					pJ = new CvPoint(cvGetSeqElem(plateJ, n));
 
-					if ( Math.abs(pI.x() - pJ.x()) < 10 && Math.abs(pI.y() - pJ.y()) < 10) {
+					if ( Math.abs(pI.x() - pJ.x()) < 5 && Math.abs(pI.y() - pJ.y()) < 5) {
 						equalPoints++;
 					}
 				}

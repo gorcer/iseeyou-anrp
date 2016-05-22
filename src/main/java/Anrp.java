@@ -13,6 +13,8 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.FrameGrabber.Exception;
@@ -322,6 +324,7 @@ public class Anrp {
 	public static void main(String[] args) throws IOException {		
 		 
 		//for(int i=0;i<10;i++) {
+				
 		
 		//testImage();		
 		if (args.length == 0) {

@@ -1,6 +1,8 @@
 package com.gorcer.iseeyou;
 
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -102,7 +104,7 @@ public class Recognizer {
 		
 		cvSetImageROI(img,rect);
 		cvWarpPerspective(img, tmp, warp_mat);		
-		//cvSaveImage(tmpPath + "/afine"+n+".jpg",  tmp);
+		cvSaveImage(FounderMgr.getPersonalTmpPath() + "/afine"+n+".jpg",  tmp);
 		cvResetImageROI(img);
 		
 		/*warp_mat=null;
@@ -130,8 +132,7 @@ public class Recognizer {
 		// Применяем каскад
 		//CvMemStorage storage = CvMemStorage.create();	       
         CvSeq plates = cvHaarDetectObjects(prepareImg, FounderMgr.haar, mainStorage,
-                1.1, 0, CV_HAAR_DO_CANNY_PRUNING);
-		
+                1.1, 0, CV_HAAR_DO_CANNY_PRUNING); /* CV_HAAR_DO_CANNY_PRUNING */
 		
 		
 		// Собираем многоугольники
@@ -208,7 +209,7 @@ public class Recognizer {
                         		 rect.width()>rect.height() &&  // Ширина больше высоты
                         		 //Math.abs(((float)x.height()/x.width())-config.maxAspectRatio)<0.1 && 
                         		  (rect.width()/(float)img.width()<0.9) && (rect.height()/(float)img.height()<0.9) // не более 90% размеров изображения
-                        		  && (rect.width()/rect.height() >3) // ширина больше высоты минимум в три раза
+                        		 // && (rect.width()/rect.height() >3) // ширина больше высоты минимум в три раза
                         		 )	{  
                         	 			squares.add(approx);    
                          			}
@@ -223,7 +224,7 @@ public class Recognizer {
 		return squares; 
 	}
 	
-	public static Vector<String> RecognizeNumber(IplImage src) {
+	public static Vector<String> RecognizeNumber(IplImage src, int j) {
 		
 		
 		String outText = null;
@@ -234,6 +235,7 @@ public class Recognizer {
 		Vector<String> result = new Vector<String>();
 
 		  Pattern p = Pattern.compile("^[ABCEHKMOPTXY]\\d{3}[ABCEHKMOPTXY]{2}\\d{2,3}$");
+		  Pattern p2 = Pattern.compile("^(.)[ABCEHKMOPTXY]\\d{3}[ABCEHKMOPTXY]{2}\\d{2,3}$");
 		  /*outText="K095CX77";	 
 		  m = p.matcher(outText);
 		  System.out.println(" m:"+m.matches());
@@ -243,7 +245,7 @@ public class Recognizer {
 		  
 		  RecognizeConfig config = new RecognizeConfig();
 		  
-		  for (int i=0;i<20;i++) {
+		  for (int i=0;i<50;i++) {
 		  
 			config.doThreshold=true;
 			config.doDilate=false;
@@ -253,7 +255,7 @@ public class Recognizer {
 			config.n=i;
 				
 				IplImage prepareImg = prepareImage(src, storage, config);
-				
+				//cvSaveImage(FounderMgr.getPersonalTmpPath() + "/afine"+j+"-prepare"+i+".jpg", prepareImg);
 				// Перевод изоражения в PIX
 				cvSaveImage(tmpPath + "/plate.jpg", prepareImg);				
 				pixImage = pixRead(tmpPath + "/plate.jpg");
@@ -269,19 +271,31 @@ public class Recognizer {
     	 		*/
     	 		// Если найден текст
 				if (recText != null) {
-									
+						
+					
 					outText = recText.getString();
 					// Убираем все лишнее
 					outText = outText.replaceAll("[^ABCEHKMOPTXY0-9]", "");
+					if (outText == "") continue;
+					
 					//rawPlate.numbers.add(outText);
 					m = p.matcher(outText);  
-					//System.out.println(outText);
+					//System.out.println(j+"-"+i+" "+outText);
 					// Если текст соответствует маске номера
 					if (m.matches() == true) {
 						
 	        	 		if (!result.contains(outText))
 	        	 			result.add(outText); 
 						//System.out.println("["+i+","+j+"]"+" num:["+outText+"] m:"+m.matches());
+					} else {
+						// на случай если артефакты по краям были приняты за символы
+						m = p2.matcher(outText);  
+						if (m.matches() == true) {
+							outText = outText.substring(1, outText.length()-1);
+							//System.out.println("Found with artifacts " + outText);
+							result.add(outText); 
+						}
+						
 					}
 				}
 				
@@ -366,7 +380,7 @@ public class Recognizer {
 		
 		RecognizeConfig config = new RecognizeConfig();
 		for (int j=0;j<2;j++)
-		for (int i=0;i<100;i++)
+		for (int i=5;i<60;i++)
 		{
 			if (j == 0)
 			{
@@ -390,10 +404,10 @@ public class Recognizer {
 			
 			prepareImg = prepareImage(src, mainStorage, config);
 						
-			//cvSaveImage(FounderMgr.getPersonalTmpPath()+"/filtered"+config.n+".jpg", prepareImg);
+			cvSaveImage(FounderMgr.getPersonalTmpPath()+"/filtered"+config.n+".jpg", prepareImg);
 			
 			tmpSquares = findPolysFiltered(prepareImg, src, mainStorage, config);			
-			
+			//System.out.println("n="+config.n+" s-"+tmpSquares.size());
 			squares.addAll(tmpSquares);
 		}
 		cvReleaseImage(prepareImg);
@@ -486,7 +500,8 @@ public class Recognizer {
 		
 			rect=cvBoundingRect(approx, 1);
 			tmpImage = Transform(rect, approx, original, i);
-	 		recognized = RecognizeNumber(tmpImage); 		
+			//System.out.println("rec="+i);
+	 		recognized = RecognizeNumber(tmpImage, i); 		
 	 		// Сохраняем информацию о найденном номере
 	 		if (recognized.size() > 0) {
 		 		PlateInfo plate = new PlateInfo();	
@@ -512,7 +527,18 @@ public class Recognizer {
 		CvPoint pI, pJ;
 		int equalPoints;
 		
-		// TODO Auto-generated method stub
+		// sort by rect size
+		Collections.sort(plates, new Comparator() {
+			  public int compare(Object a, Object b) {
+				  CvRect rectA=cvBoundingRect((CvSeq)a, 1);
+				  CvRect rectB=cvBoundingRect((CvSeq)b, 1);
+				  Integer squareA = rectA.width()*rectA.height();
+				  Integer squareB = rectB.width()*rectB.height();
+			    return ( squareA.compareTo(squareB));
+			  }
+			});
+		
+		
 		if (plates.size() > 0)
 		for(int i=0; i<plates.size();i++) 
 			for(int j=0; j<plates.size();j++) {
@@ -568,19 +594,6 @@ public class Recognizer {
 	        	//System.out.println("i="+i+"; t="+pts.capacity());
 	        	seq = (CvSeq)squares.get(i);
 	        	cvCvtSeqToArray(seq, pts, CV_WHOLE_SEQ);
-	                    
-	            
-	        	//CvRect Rect = new CvRect(10, 10, 100, 100);  //cvBoundingRect(tRect, 1);
-	        	//System.out.println(Rect);        	
-	        	
-	        	// cvSetImageROI(image,Rect);
-	        	 
-	        	 //System.out.println(image);
-	        	 
-	        	//int step=150;
-	        	
-	        	//float[] dstArr = {i*step,0,i*step,Math.round(step*0.2),step+i*step,Math.round(step*0.2)};
-	        	//float[] srcArr = new float[6];
 	                
 		        
 		        /*

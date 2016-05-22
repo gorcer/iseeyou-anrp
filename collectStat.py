@@ -22,7 +22,7 @@ resultPath = "./resultData/"+scriptName+"/"
 reportHtml=""
 reportFile = resultPath + "result.html"
 startTime=time.time()
-
+emptyPhotosHtml=""
 
 #initReport
 if (os.path.exists(resultPath) is False):
@@ -92,14 +92,16 @@ with open(dataFileName, 'rb') as csvfile:
 		with open(reportFile, "a") as report:
                     report.write(rowTemplate % (url, imagePath,bullId, bullId, photoId))
 		    report.write("\n")
-
+	    elif (result["result"] == "empty"):
+		emptyPhotosHtml = emptyPhotosHtml + "<a href='"+url+"' target='_blank'><img src='"+url+"' width='400'/>";
             elif (result["result"] != "empty"):
                 errors=errors+1
 	    print "result: " + status
 endTime=time.time()
 elapsed = (endTime-startTime)
 with open(reportFile, "a") as report:
-        report.write("<br/><p>Total images processed: %d<br/>\n Total plates found: %d (you need to calculate real plates count) <br/>\n Errors count: %d <br/>\n Elapsed time (s.): %d</p></body></html>" % (total, plates, errors, elapsed))
-        report.write("\n")
+        report.write("<br/><p>Total images processed: %d<br/>\n Total plates found: %d (you need to calculate real plates count) <br/>\n Errors count: %d <br/>\n Elapsed time (s.): %d</p>" % (total, plates, errors, elapsed))
+	report.write("<br/><p>Unrecognized photos:<br/>"+emptyPhotosHtml+"</p>")
+        report.write("</body></html>")
 
 sys.exit();

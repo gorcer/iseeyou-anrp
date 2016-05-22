@@ -45,7 +45,7 @@ public class FounderMgr {
 	public static TessBaseAPI api;
 	public static CvHaarClassifierCascade haar;
 	
-	public boolean verbose=false;
+	public static boolean verbose=false;
 	
 	/*
 	public static FounderMgr getInstance() {
@@ -248,7 +248,7 @@ public class FounderMgr {
 		
 	}
 	
-	public void println(String text) {
+	public static void println(String text) {
 		if (verbose == true) {
 			System.out.println(text);
 		}

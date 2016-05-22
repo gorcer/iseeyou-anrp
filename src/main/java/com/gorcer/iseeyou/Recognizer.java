@@ -103,7 +103,8 @@ public class Recognizer {
 		
 		cvSetImageROI(img,rect);
 		cvWarpPerspective(img, tmp, warp_mat);		
-		//cvSaveImage(FounderMgr.getPersonalTmpPath() + "/afine"+n+".jpg",  tmp);
+		if (FounderMgr.verbose)
+			cvSaveImage(FounderMgr.getPersonalTmpPath() + "/afine"+n+".jpg",  tmp);
 		cvResetImageROI(img);
 		
 		/*warp_mat=null;
@@ -401,8 +402,9 @@ public class Recognizer {
 			config.n=j*100+i;
 			
 			prepareImg = prepareImage(src, mainStorage, config);
-						
-			//cvSaveImage(FounderMgr.getPersonalTmpPath()+"/filtered"+config.n+".jpg", prepareImg);
+			
+			if (FounderMgr.verbose)
+				cvSaveImage(FounderMgr.getPersonalTmpPath()+"/filtered"+config.n+".jpg", prepareImg);
 			
 			tmpSquares = findPolysFiltered(prepareImg, src, mainStorage, config);			
 			//System.out.println("n="+config.n+" s-"+tmpSquares.size());
@@ -435,16 +437,16 @@ public class Recognizer {
 	{
 		CvMemStorage mainStorage = CvMemStorage.create();
 		mgr.start();
-		mgr.println("Start processing");
+		FounderMgr.println("Start processing");
 		final IplImage image = cvLoadImage(filename);
 		
 		mgr.sourceImage = image;	
 		Vector<CvSeq> polys = new Vector<CvSeq>(); 
 		polys = findPolys( image, mainStorage );
-		mgr.println("Found " + polys.size() + " polygons via FindPoly ("+mgr.getWorkTime()+"s.)");
+		FounderMgr.println("Found " + polys.size() + " polygons via FindPoly ("+mgr.getWorkTime()+"s.)");
 		
 		Vector<CvSeq> haarPolys = findHaarFiltered(image, mainStorage);
-		mgr.println("Found " + haarPolys.size() + " polygons via Haar Cascade ("+mgr.getWorkTime()+"s.)");
+		FounderMgr.println("Found " + haarPolys.size() + " polygons via Haar Cascade ("+mgr.getWorkTime()+"s.)");
 		polys.addAll(haarPolys);
 
 		// оптимизируем только если много нашли
@@ -454,7 +456,7 @@ public class Recognizer {
 			optimizeSquares(polys);
 		}
 		
-		if (mgr.verbose) {
+		if (FounderMgr.verbose) {
 			IplImage test = cvCloneImage(image);
 			drawSquares(test, polys);
 			cvSaveImage(FounderMgr.getPersonalTmpPath()+ "/drawSquares.jpg",test);
@@ -469,11 +471,11 @@ public class Recognizer {
 			System.out.println(pts.toString());
 		}*/
 		
-		mgr.println("Polygons after optimization " + polys.size() + " polygons  ("+mgr.getWorkTime()+"s.)");
+		FounderMgr.println("Polygons after optimization " + polys.size() + " polygons  ("+mgr.getWorkTime()+"s.)");
 		
 		mgr.plates = findNumbers(polys, image);
-		mgr.println("Found " + mgr.plates.size() + " plates  ("+mgr.getWorkTime()+"s.)");
-		mgr.println("Found numbers: " + mgr.getNumStat());		
+		FounderMgr.println("Found " + mgr.plates.size() + " plates  ("+mgr.getWorkTime()+"s.)");
+		FounderMgr.println("Found numbers: " + mgr.getNumStat());		
 		
 		mgr.finish();
 		mgr=null;

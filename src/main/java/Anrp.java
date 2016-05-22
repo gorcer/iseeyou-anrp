@@ -349,14 +349,14 @@ public class Anrp {
 				
 				// Если url
 				if (fn.toLowerCase().contains("http") && (fn.toLowerCase().contains("jpg") || fn.toLowerCase().contains("jpeg"))) {
-					mgr.println("Try to download file " + fn);
+					FounderMgr.println("Try to download file " + fn);
 					URL website = new URL(fn);
 					ReadableByteChannel rbc = Channels.newChannel(website.openStream());
 					fn = FounderMgr.getPersonalTmpPath() + "/downloadedvc.jpg";
 					FileOutputStream fos = new FileOutputStream(fn);
 					fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 					fos.close();					
-					mgr.println("Download and save to " + fn);
+					FounderMgr.println("Download and save to " + fn);
 				}
 				
 				// Если файл на диске

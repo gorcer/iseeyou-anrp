@@ -63,9 +63,6 @@ public class FounderMgr {
 	
 	public boolean prepareEnv() {
 		
-		//clear old tmp paths
-		clearOldTmpPaths();
-		
 		// uncomment in prod
 		tmpPathPostfix = "anrp-"+UUID.randomUUID().toString();
 		
@@ -86,6 +83,9 @@ public class FounderMgr {
 			}
 		} 
 		
+		//clear old tmp paths
+		clearOldTmpPaths();
+				
 		// Отчищаем список
 		//plates.clear();
 		//rawPlates.clear();

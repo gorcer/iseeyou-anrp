@@ -174,7 +174,7 @@ public class FounderMgr {
 	}
 	
 	public long getWorkTime() {
-		return (endTime - startTime)/1000;
+		return (System.currentTimeMillis() - startTime)/1000;
 	}
 	
 	public Vector<String> getNumbers() {

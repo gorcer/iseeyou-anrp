@@ -92,8 +92,7 @@ public class Recognizer {
 	    {
     		srcArr[j*2]=(int)pts.get(j).x()-rect.x();
     		srcArr[j*2+1]=(int)pts.get(j).y()-rect.y();	
-    		
-    		
+
     		//System.out.println("Transform src x="+srcArr[j*2]+" y="+srcArr[j*2+1]);    		 
 	    }
 		
@@ -104,7 +103,7 @@ public class Recognizer {
 		
 		cvSetImageROI(img,rect);
 		cvWarpPerspective(img, tmp, warp_mat);		
-		cvSaveImage(FounderMgr.getPersonalTmpPath() + "/afine"+n+".jpg",  tmp);
+		//cvSaveImage(FounderMgr.getPersonalTmpPath() + "/afine"+n+".jpg",  tmp);
 		cvResetImageROI(img);
 		
 		/*warp_mat=null;
@@ -177,8 +176,7 @@ public class Recognizer {
 		
 		// Перебираем контуры
 		while (contours != null && !contours.isNull()) 
-		{
-			
+		{			
 			//Если точек в контуре > 0
 			if (contours.elem_size() > 0) 
 			{
@@ -404,7 +402,7 @@ public class Recognizer {
 			
 			prepareImg = prepareImage(src, mainStorage, config);
 						
-			cvSaveImage(FounderMgr.getPersonalTmpPath()+"/filtered"+config.n+".jpg", prepareImg);
+			//cvSaveImage(FounderMgr.getPersonalTmpPath()+"/filtered"+config.n+".jpg", prepareImg);
 			
 			tmpSquares = findPolysFiltered(prepareImg, src, mainStorage, config);			
 			//System.out.println("n="+config.n+" s-"+tmpSquares.size());
@@ -437,18 +435,19 @@ public class Recognizer {
 	{
 		CvMemStorage mainStorage = CvMemStorage.create();
 		mgr.start();
-		
+		mgr.println("Start processing");
 		final IplImage image = cvLoadImage(filename);
 		
 		mgr.sourceImage = image;	
 		Vector<CvSeq> polys = new Vector<CvSeq>(); 
 		polys = findPolys( image, mainStorage );
-		mgr.println("Found " + polys.size() + " polygons via FindPoly");
+		mgr.println("Found " + polys.size() + " polygons via FindPoly ("+mgr.getWorkTime()+"s.)");
 		
 		Vector<CvSeq> haarPolys = findHaarFiltered(image, mainStorage);
-		mgr.println("Found " + haarPolys.size() + " polygons via Haar Cascade");
+		mgr.println("Found " + haarPolys.size() + " polygons via Haar Cascade ("+mgr.getWorkTime()+"s.)");
 		polys.addAll(haarPolys);
 
+		// оптимизируем только если много нашли
 		if (polys.size() > 40) {
 			optimizeSquares(polys);
 			// есть проблема, не все вычищает с первого раза, поэтому пока так. Исследовать на примере https://s.auto.drom.ru/5/sales/photos/19233/19232478/151658366.jpg
@@ -470,10 +469,10 @@ public class Recognizer {
 			System.out.println(pts.toString());
 		}*/
 		
-		mgr.println("Polygons after optimization " + polys.size() + " polygons");
+		mgr.println("Polygons after optimization " + polys.size() + " polygons  ("+mgr.getWorkTime()+"s.)");
 		
 		mgr.plates = findNumbers(polys, image);
-		mgr.println("Found " + mgr.plates.size() + " plates");
+		mgr.println("Found " + mgr.plates.size() + " plates  ("+mgr.getWorkTime()+"s.)");
 		mgr.println("Found numbers: " + mgr.getNumStat());		
 		
 		mgr.finish();

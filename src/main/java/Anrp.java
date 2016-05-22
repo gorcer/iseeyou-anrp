@@ -366,7 +366,6 @@ public class Anrp {
 				 }
 					 
 				 // Распознаем
-				 mgr.println("Start processing");				 		 
 				 Recognizer.process(fn, mgr);				 
 				 
 				 mgr.println("Processing finished, " + mgr.getWorkTime() + " sec. remained");				 

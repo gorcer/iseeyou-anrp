@@ -20,7 +20,6 @@ import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 import static org.bytedeco.javacpp.opencv_objdetect.*;
 import static org.bytedeco.javacpp.opencv_imgcodecs.*;
-import static org.bytedeco.javacpp.helper.opencv_objdetect.cvHaarDetectObjects;
 import static org.bytedeco.javacpp.lept.*;
 
 public class Recognizer {
@@ -296,6 +295,8 @@ public class Recognizer {
 						}
 						
 					}
+					
+					
 				}
 				
 				//mgr.rawPlates.add(rawPlate);

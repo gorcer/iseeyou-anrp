@@ -3,20 +3,15 @@ import static com.googlecode.javacv.cpp.opencv_highgui.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 */
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.FrameGrabber.Exception;
 
 import com.gorcer.iseeyou.FounderMgr;
@@ -25,13 +20,10 @@ import com.gorcer.iseeyou.Recognizer;
 
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacpp.opencv_core.IplImage;
-import org.bytedeco.javacpp.opencv_objdetect.CvHaarClassifierCascade;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 import static org.bytedeco.javacpp.opencv_imgcodecs.*;
-import static org.bytedeco.javacpp.opencv_calib3d.*;
-import static org.bytedeco.javacpp.opencv_objdetect.*;
 
 /*import org.bytedeco.javacv.cpp.CanvasFrame;
 import org.bytedeco.javacv.cpp.opencv_core.*;
@@ -270,7 +262,7 @@ public class Anrp {
 	}
 	
 	public static void main_haar(String[] args) throws IOException {
-		String fn = "./Images/Test7.jpg"; 
+		/*String fn = "./Images/Test7.jpg"; 
 		IplImage src = cvLoadImage(fn);
 		IplImage grayImage    = IplImage.create(src.width(), src.height(), IPL_DEPTH_8U, 1);
 		
@@ -317,7 +309,7 @@ public class Anrp {
 		original.showImage(converter.convert(src));
 		//smooth.showImage(gray);
 		original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
-		
+		*/
 		
 	}
 	
@@ -386,141 +378,6 @@ public class Anrp {
 		}*/
 		
 	}
-	
-	public static void main2(String[] args) {
-		
-		 //Vector<CvSeq> squares;// = new Vector();
-		
-		//Load image img1 as IplImage
-		final IplImage image = cvLoadImage("Images/Test2.jpg");
-		
-		  // ��������� �������� 
-        //final IplImage dst = cvCreateImage(cvSize(image.width(), image.height()), image.depth(), image.nChannels());
-        
-        //final IplImage gray = cvCreateImage( cvGetSize(image), IPL_DEPTH_8U, 1 );
-        IplImage dst;
 
-
-		
-		//create canvas frame named 'Demo'
-		final CanvasFrame original = new CanvasFrame("Ori");
-/*		
-		CvCapture capture = cvCreateFileCapture("test.avi");
-		IplImage frame;
-		
-		cvSetCaptureProperty(capture, CV_CAP_PROP_POS_FRAMES, 4700);
-
-		while(true){
-			frame = cvQueryFrame( capture ); 
-			if(frame == null) {
-                break;
-			}
-			
-		     dst = cvCloneImage(frame);
-
-		     dst = cvCreateImage( cvSize(frame.width()/1, frame.height()/1), frame.depth(), frame.nChannels() );
-             cvResize(frame, dst, frame.nChannels());
-               
-              */
-			dst = cvCloneImage(image);
-		     
-			
-			
-			
-		    // cvCvtColor(dst, gray, CV_RGB2GRAY);
-            // cvConvertImage(dst, gray,0);
-			// squares = findSquares(gray, storage);  
-             
-     	    
-             
-            // squares = Recognizer.findNumbers(dst);
-			
-        //     Recognizer.drawSquares(dst, squares);
-			
-			/*CvSize sz = cvSize(gray.width() & -2, gray.height() & -2);			
-			IplImage pyr = cvCreateImage(cvSize(sz.width()/2, sz.height()/2), gray.depth(), gray.nChannels());
-//			cvPyrDown(gray, pyr, CV_GAUSSIAN_5x5);
-//			cvPyrUp(pyr, gray, CV_GAUSSIAN_5x5);
-			cvDilate(gray, gray, null, 1);
-			cvThreshold(gray, gray, 85, 255, CV_THRESH_BINARY);
-			 */
-			 //cvCanny(gray, gray, 0, 100, 3);
-			 
-//			 cvAdaptiveThreshold(gray, gray, 255, CV_ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 7, 1);
-
-			OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
-			
-			original.showImage(converter.convert(dst));
-			//smooth.showImage(gray);
-			original.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
-			
-			
-			
-		//} //--video
-
-		//create canvas frame named 'Demo'
-		//final CanvasFrame smooth = new CanvasFrame("Smo");
-		
-		//cvCvtColor(image, gray, CV_RGB2GRAY);
-		//squares = findSquares(gray, storage);      
-		
-		
-		//drawSquares(image, dst, squares);
-		
-		
-		//CvRect Rect = new CvRect(10, 10, 10, 10);  //cvBoundingRect(tRect, 1);
-		//cvSetImageROI(image,Rect);
-		
-		
-		//cvResize(image, dst, 4);
-		//cvSmooth(dst, dst, CV_GAUSSIAN, 3);
-		
-		
-	//	cvDilate(gray, gray, null, 1);
-		//cvPyrDown(image, gray, CV_GAUSSIAN_5x5);
-		
-	//cvThreshold(gray, gray, 150, 250, CV_THRESH_OTSU);		
-	//	cvCanny(gray, gray, 50, 100, 3);
-		
-	//	final IplImage dst = cvCloneImage(gray);
-		
-	/*	
-		 // ���������� �����
-        lines = cvHoughLines2( gray, storage, CV_HOUGH_PROBABILISTIC, 1, Math.PI/180, 10, 10, 10 );       
-        
-       for(int i=0;i<lines.total();i++)
-       {
-    	   Pointer line = cvGetSeqElem(lines, i);
-           CvPoint pt1  = new CvPoint(line).position(0);
-           CvPoint pt2  = new CvPoint(line).position(1);
-           
-            cvLine(image, pt1, pt2, CV_RGB(255,0,0), 1, CV_AA, 0 );           
-        	
-        }*/       
-       
-        
-	//	cvFindContours(gray, storage, contours, Loader.sizeof(CvContour.class), CV_RETR_LIST, CV_CHAIN_APPROX_TC89_L1);
-		
-		//cvDrawContours(image, contours, CvScalar.BLUE, CvScalar.BLUE, -1, 1, CV_AA);
-		
-		/*
-		 while (contours != null && !contours.isNull()) {
-             if (contours.elem_size() > 0) {
-                 CvSeq points = cvApproxPoly(contours, Loader.sizeof(CvContour.class),
-                         storage, CV_POLY_APPROX_DP, cvContourPerimeter(contours)*0.02, 0);
-                 cvDrawContours(image, points, CvScalar.BLUE, CvScalar.BLUE, -1, 1, CV_AA);
-             }
-             contours = contours.h_next();
-         }*/
-		 
-
-		
-		//Show image in canvas frame
-		//original.showImage(image);
-		//smooth.showImage(dst);
-		
-		//This will close canvas frame on exit
-		
-	}
 	
 }

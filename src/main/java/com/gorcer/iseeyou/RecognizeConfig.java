@@ -14,7 +14,7 @@ public class RecognizeConfig {
 	public double maxCosine=0.4;
 	public double maxSquare=500000;
 	public double maxAspectRatio=0.5;
-	public double ApproxAccuracy=0.02;
+	public double ApproxAccuracy=0.025;
 	public int n=0;
 	
 

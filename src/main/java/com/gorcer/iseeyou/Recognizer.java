@@ -175,6 +175,8 @@ public class Recognizer {
 		//cvSaveImage("tmp/ok-"+config.n+"-"+config.Thresh+".jpg",   img);
 		cvFindContours(tmp, storage, contours, Loader.sizeof(CvContour.class), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
 		
+		
+		
 		// Перебираем контуры
 		while (contours != null && !contours.isNull()) 
 		{			
@@ -182,10 +184,8 @@ public class Recognizer {
 			if (contours.elem_size() > 0) 
 			{
                 approx = cvApproxPoly(contours, Loader.sizeof(CvContour.class),storage, CV_POLY_APPROX_DP, cvContourPerimeter(contours)*config.ApproxAccuracy, 0);
-                
-                /*if (approx.total() == 4 && Math.abs(cvContourArea(approx, CV_WHOLE_SEQ, 0)) > config.minContourArea)
-                	System.out.println(cvCheckContourConvexity(approx));*/
-                
+              
+
                 if (approx.total() == 4 // Четыре стороны
                     && Math.abs(cvContourArea(approx, CV_WHOLE_SEQ, 0)) > config.minContourArea
                     && cvCheckContourConvexity(approx) != 0 // контур замкнут
@@ -219,6 +219,7 @@ public class Recognizer {
 			
 			contours = contours.h_next();
 		}
+		
 		approx=null;
 		return squares; 
 	}
@@ -379,7 +380,7 @@ public class Recognizer {
 		
 		RecognizeConfig config = new RecognizeConfig();
 		for (int j=0;j<2;j++)
-		for (int i=5;i<60;i++)
+		for (int i=0;i<60;i++)
 		{
 			if (j == 0)
 			{

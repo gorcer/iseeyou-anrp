@@ -18,15 +18,11 @@ cd ./iseeyou-anrp
 sudo apt-get install tesseract-ocr
 ```
 
-Копируем данные для tesseract
+Прописываем путь
 ```
-cp ./train/avt.traineddata /usr/share/tesseract-ocr/tessdata/
+export TESSDATA_PREFIX=$PWD
 ```
-
-Прописываем путь (в IDE это тоже нужно сделать)
-```
-export TESSDATA_PREFIX="/usr/share/tesseract-ocr/tessdata/"
-```
+В IDE должен быть так же прописана глобальная переменная указывающая на папку проекта
 
 Собираем проект
 ```

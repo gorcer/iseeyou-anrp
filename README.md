@@ -6,26 +6,31 @@ iseeyou-anrp
 
 Установка
 ---------
-Клонируем репозиторий
-git clone https://github.com/gorcer/iseeyou-anrp.git
 
+Клонируем репозиторий
+```
+git clone https://github.com/gorcer/iseeyou-anrp.git
 cd ./iseeyou-anrp
+```
 
 Ставим tesserat
-
+```
 sudo apt-get install tesseract-ocr
+```
 
-Копируем данные для tesseract
+Прописываем путь
+```
+export TESSDATA_PREFIX=$PWD
+```
+В IDE должна быть так же прописана глобальная переменная указывающая на папку проекта
 
-cp ./train/avt.traineddata /usr/share/tesseract-ocr/tessdata/
-
-Прописываем путь (в IDE это тоже нужно сделать)
-
-export TESSDATA_PREFIX="/usr/share/tesseract-ocr/tessdata/"
+Собираем проект
+```
+mvn package
+```
 
 Пробуем распознать номер по URL
-
-java -jar iSeeYouAnrp.jar http://s.auto.drom.ru/i24195/s/photos/21465/21464270/167091099.jpg
-   
-P.S: Работает пока только на линуксе, т.к. временные файлы хранит в /tmp/iSeeYouAnrp, но это можно легко исправить - welcome to fork.
+```
+java -jar target/iSeeYouAnrp-1.0-jar-with-dependencies.jar http://s.auto.drom.ru/i24195/s/photos/21465/21464270/167091099.jpg
+```
 

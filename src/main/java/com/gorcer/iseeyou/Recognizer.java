@@ -183,7 +183,7 @@ public class Recognizer {
 			if (contours.elem_size() > 0) 
 			{
                 approx = cvApproxPoly(contours, Loader.sizeof(CvContour.class),storage, CV_POLY_APPROX_DP, cvContourPerimeter(contours)*config.ApproxAccuracy, 0);
-              
+                CvRect rect=cvBoundingRect(approx, 1);
 
                 if (approx.total() == 4 // Четыре стороны
                     && Math.abs(cvContourArea(approx, CV_WHOLE_SEQ, 0)) > config.minContourArea
@@ -201,7 +201,7 @@ public class Recognizer {
                      }
                 	 
                 	 if( maxCosine < config.maxCosine)	{
-                         CvRect rect=cvBoundingRect(approx, 1);
+                         
                          if (    // @refact нужно отрефакторить и сделать общую функцию validRect                  		 
                         		 //rect.width()*rect.height()<config.maxSquare && // Макс площадь
                         		 rect.width()>rect.height() &&  // Ширина больше высоты
@@ -293,8 +293,12 @@ public class Recognizer {
 							outText = outText.substring(1, outText.length()-1);
 							//System.out.println("Found with artifacts " + outText);
 							result.add(outText); 
-						}
-						
+						}						
+					}
+					
+					// оптимизация, если нашел 2 номера - выходим
+					if (result.size()>2) {
+						break;
 					}
 					
 					

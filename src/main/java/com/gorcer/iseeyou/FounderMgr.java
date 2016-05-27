@@ -38,7 +38,7 @@ public class FounderMgr {
 	public Vector<PlateInfo> plates, rawPlates;
 	public long startTime, endTime;
 	
-	public static String tmpPath = "./tmp";/*"/tmp/iSeeYouAnrp";*/
+	public static String tmpPath = "/tmp/iSeeYouAnrp";/* "./tmp";/ */
 	private static String tmpPathPostfix;
 	
 	public IplImage sourceImage;

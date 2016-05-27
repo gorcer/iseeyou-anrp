@@ -1,6 +1,7 @@
 package com.gorcer.iseeyou;
 
 
+import java.awt.geom.Point2D;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Vector;
@@ -174,8 +175,6 @@ public class Recognizer {
 		//cvSaveImage("tmp/ok-"+config.n+"-"+config.Thresh+".jpg",   img);
 		cvFindContours(tmp, storage, contours, Loader.sizeof(CvContour.class), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
 		
-		
-		
 		// Перебираем контуры
 		while (contours != null && !contours.isNull()) 
 		{			
@@ -184,9 +183,17 @@ public class Recognizer {
 			{
                 approx = cvApproxPoly(contours, Loader.sizeof(CvContour.class),storage, CV_POLY_APPROX_DP, cvContourPerimeter(contours)*config.ApproxAccuracy, 0);
                 CvRect rect=cvBoundingRect(approx, 1);
+                
+                if (Math.abs(cvContourArea(approx, CV_WHOLE_SEQ, 0)) < config.minContourArea
+                	|| approx.total() < 4
+                		) {
+                	contours = contours.h_next();
+                	continue;
+                }
+                
+                approx = ApproxToBoundingRect(approx, rect, storage); 
 
-                if (approx.total() == 4 // Четыре стороны
-                    && Math.abs(cvContourArea(approx, CV_WHOLE_SEQ, 0)) > config.minContourArea
+                if (approx.total() == 4 // Четыре стороны                    
                     && cvCheckContourConvexity(approx) != 0 // контур замкнут
                     )
                 {
@@ -219,10 +226,69 @@ public class Recognizer {
 			contours = contours.h_next();
 		}
 		
+		
 		approx=null;
 		return squares; 
 	}
 	
+	private static CvSeq ApproxToBoundingRect(CvSeq contours, CvRect rect, CvMemStorage storage) {
+		
+		CvPoint bestPt=null;
+		double distance, bestDistance;
+		Vector<CvPoint> tmpPoints= new Vector<CvPoint>();
+		boolean exists;
+		
+		CvSeq result =cvCreateSeq(CV_SEQ_ELTYPE_POINT,  Loader.sizeof(CvSeq.class), Loader.sizeof(CvPoint.class), storage);		
+		
+		
+		// set array from rect
+		CvPoint []rectPoints = {
+					new CvPoint(rect.x(), rect.y()),
+					new CvPoint(rect.x()+rect.width(), rect.y()),
+					new CvPoint(rect.x()+rect.width(), rect.y()+rect.height()),
+					new CvPoint(rect.x(), rect.y()+rect.height()),
+				};
+		
+		//System.out.println("rectPt ="+rect.toString());	
+		
+		// find closed points in seq
+		for (int i=0; i<rectPoints.length; i++) {
+			bestDistance=-1;
+			//System.out.print("All points: ");
+			for (int j=0; j<contours.total();j++) {
+				CvPoint pt = new CvPoint(cvGetSeqElem(contours, j)); 
+				//System.out.print(pt.x() + ":"+pt.y()+", ");
+				distance = Point2D.distance(rectPoints[i].x(), rectPoints[i].y(), pt.x(), pt.y());
+				
+				if ((bestDistance == -1 || distance<bestDistance)) {
+					exists=false;
+					for (CvPoint tpt : tmpPoints) {
+						if (tpt.x() == pt.x() && tpt.y() == pt.y()) {
+							exists=true;
+							break;
+						}
+					}
+					
+					if (exists == true) 
+						continue;
+										
+					bestDistance = distance;
+					bestPt = pt;
+				}
+				
+			}
+			//System.out.println(" bestpt ="+bestPt.toString());
+			tmpPoints.add(bestPt);
+			cvSeqPush(result, bestPt);
+			
+		}
+
+		
+		
+		return result;
+	}
+
+
 	public static Vector<String> RecognizeNumber(IplImage src, int j) {
 		
 		

@@ -300,8 +300,8 @@ public class Recognizer {
 		Matcher m;
 		Vector<String> result = new Vector<String>();
 
-		  Pattern p = Pattern.compile("^[ABCEHKMOPTXY]\\d{3}[ABCEHKMOPTXY]{2}\\d{2,3}$");
-		  Pattern p2 = Pattern.compile("^.?[ABCEHKMOPTXY]\\d{3}[ABCEHKMOPTXY]{2}\\d{2,3}.?$");
+		  Pattern p = Pattern.compile("^[ABCEHKMOPTXY0][0-9O]{3}[ABCEHKMOPTXY0]{2}[0-9O]{2,3}$");
+		  Pattern p2 = Pattern.compile("^.?[ABCEHKMOPTXY0][0-9O]{3}[ABCEHKMOPTXY0]{2}[0-9O]{2,3}.?$");
 		  /*outText="K095CX77";	 
 		  m = p.matcher(outText);
 		  System.out.println(" m:"+m.matches());
@@ -329,7 +329,10 @@ public class Recognizer {
 				// Распознаем
 				FounderMgr.api.SetImage(pixImage);
 				recText = FounderMgr.api.GetUTF8Text();
-			
+				
+				/*if (j == 50) {
+					System.out.println("recText  =" + recText.getString());
+				}*/
 				// Для отладки распознавалки, потом убрать
 				/*PlateInfo rawPlate = new PlateInfo();
     	 		rawPlate.plateImage = prepareImg;

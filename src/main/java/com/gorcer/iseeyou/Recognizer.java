@@ -190,11 +190,12 @@ public class Recognizer {
                 	contours = contours.h_next();
                 	continue;
                 }
-                
+              
+                // Аппроксимация по прямоугольнику
                 approx = ApproxToBoundingRect(approx, rect, storage); 
 
-                if (approx.total() == 4 // Четыре стороны                    
-                    && cvCheckContourConvexity(approx) != 0 // контур замкнут
+                if ((approx.total() == 4 // Четыре стороны                    
+                    && cvCheckContourConvexity(approx) != 0) // контур замкнут
                     )
                 {
                 	
@@ -207,7 +208,7 @@ public class Recognizer {
                         maxCosine = Math.max(maxCosine, cosine);
                      }
                 	 
-                	 if( maxCosine < config.maxCosine)	{
+                	 if(maxCosine < config.maxCosine)	{
                          
                          if (    // @refact нужно отрефакторить и сделать общую функцию validRect                  		 
                         		 //rect.width()*rect.height()<config.maxSquare && // Макс площадь
@@ -300,7 +301,7 @@ public class Recognizer {
 		Vector<String> result = new Vector<String>();
 
 		  Pattern p = Pattern.compile("^[ABCEHKMOPTXY]\\d{3}[ABCEHKMOPTXY]{2}\\d{2,3}$");
-		  Pattern p2 = Pattern.compile("^(.)[ABCEHKMOPTXY]\\d{3}[ABCEHKMOPTXY]{2}\\d{2,3}$");
+		  Pattern p2 = Pattern.compile("^.?[ABCEHKMOPTXY]\\d{3}[ABCEHKMOPTXY]{2}\\d{2,3}.?$");
 		  /*outText="K095CX77";	 
 		  m = p.matcher(outText);
 		  System.out.println(" m:"+m.matches());
@@ -328,7 +329,7 @@ public class Recognizer {
 				// Распознаем
 				FounderMgr.api.SetImage(pixImage);
 				recText = FounderMgr.api.GetUTF8Text();
-				
+			
 				// Для отладки распознавалки, потом убрать
 				/*PlateInfo rawPlate = new PlateInfo();
     	 		rawPlate.plateImage = prepareImg;
@@ -340,7 +341,8 @@ public class Recognizer {
 					
 					outText = recText.getString();
 					// Убираем все лишнее
-					outText = outText.replaceAll("[^ABCEHKMOPTXY0-9]", "");
+					outText = outText.replaceAll("[^ABCEHKMOPTXY0-9]", "");					
+					
 					if (outText == "") continue;
 					
 					//rawPlate.numbers.add(outText);
@@ -349,8 +351,10 @@ public class Recognizer {
 					// Если текст соответствует маске номера
 					if (m.matches() == true) {
 						
-	        	 		if (!result.contains(outText))
-	        	 			result.add(outText); 
+	        	 		if (!result.contains(outText)) {
+	        	 			result.add(outText);	        	 		
+	        	 		}
+	        	 		
 						//System.out.println("["+i+","+j+"]"+" num:["+outText+"] m:"+m.matches());
 					} else {
 						// на случай если артефакты по краям были приняты за символы
@@ -358,7 +362,7 @@ public class Recognizer {
 						if (m.matches() == true) {
 							outText = outText.substring(1, outText.length()-1);
 							//System.out.println("Found with artifacts " + outText);
-							result.add(outText); 
+							result.add(outText);						
 						}						
 					}
 					

@@ -11,7 +11,7 @@ public class RecognizeConfig {
 	public boolean doSmooth=true;
 	
 	public int minContourArea=1000;
-	public double maxCosine=0.4;
+	public double maxCosine=0.5;
 	public double maxSquare=500000;
 	public double maxAspectRatio=0.5;
 	public double ApproxAccuracy=0.025;

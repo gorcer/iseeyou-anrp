@@ -31,6 +31,6 @@ mvn package
 
 Пробуем распознать номер по URL
 ```
-java -jar target/iSeeYouAnrp-1.0-jar-with-dependencies.jar http://s.auto.drom.ru/i24195/s/photos/21465/21464270/167091099.jpg
+java -jar target/iSeeYouAnrp.jar http://s.auto.drom.ru/i24195/s/photos/21465/21464270/167091099.jpg
 ```
 

@@ -290,12 +290,11 @@ public class Recognizer {
 	}
 
 
-	public static Vector<String> RecognizeNumber(IplImage src, int j) {
+	public static Vector<String> RecognizeNumber(IplImage src, int j, CvMemStorage mainStorage) {
 		
 		
 		String outText = null;
 		BytePointer recText = null;
-		CvMemStorage storage = CvMemStorage.create();
 		PIX pixImage;
 		Matcher m;
 		Vector<String> result = new Vector<String>();
@@ -320,7 +319,15 @@ public class Recognizer {
 			config.doPyr=false;
 			config.n=i;
 				
-				IplImage prepareImg = prepareImage(src, storage, config);
+				IplImage prepareImg = prepareImage(src, mainStorage, config);
+				
+				/*CvSeq plates = cvHaarDetectObjects(prepareImg, FounderMgr.haar, mainStorage,
+		                1.1, 0, CV_HAAR_DO_CANNY_PRUNING);
+				
+				if (plates.total() == 0) {
+					continue;
+				}*/
+				
 				//cvSaveImage(FounderMgr.getPersonalTmpPath() + "/afine"+j+"-prepare"+i+".jpg", prepareImg);
 				// Перевод изоражения в PIX
 				cvSaveImage(tmpPath + "/plate.jpg", prepareImg);				
@@ -370,7 +377,7 @@ public class Recognizer {
 					}
 					
 					// оптимизация, если нашел 2 номера - выходим
-					if (result.size()>2) {
+					if (result.size()>1) {
 						break;
 					}
 					
@@ -380,7 +387,7 @@ public class Recognizer {
 				//mgr.rawPlates.add(rawPlate);
 				//System.out.println("["+i+","+j+"]"+" num:["+outText+"] m:"+m.matches());
 		  }
-		  cvClearMemStorage(storage);		  
+	  
 		  outText=null;
 		  recText=null;
 		  pixImage=null;
@@ -552,7 +559,7 @@ public class Recognizer {
 		
 		FounderMgr.println("Polygons after optimization " + polys.size() + " polygons  ("+mgr.getWorkTime()+"s.)");
 		
-		mgr.plates = findNumbers(polys, image);
+		mgr.plates = optimizePlates( findNumbers(polys, image, mainStorage) );
 		FounderMgr.println("Found " + mgr.plates.size() + " plates  ("+mgr.getWorkTime()+"s.)");
 		FounderMgr.println("Found numbers: " + mgr.getNumStat());		
 		
@@ -563,12 +570,65 @@ public class Recognizer {
 	}
 	
 	/**
+	 * Оптимизируем массив планок, убираем все что сливается друг с другом в пользу наибольших и сортируем по популярности локаций
+	 * @param plates
+	 * @return
+	 */
+	private static Vector<PlateInfo> optimizePlates(Vector<PlateInfo> plates) {
+		
+		CvSeq plateI, plateJ;
+		CvPoint pI, pJ;
+		int equalPoints;
+		
+		// Удаляем те планки что совпадают по 2 координатам но меньше по размеру
+		if (plates.size() > 0)
+			for(int i=0; i<plates.size();i++) 
+				for(int j=0; j<plates.size();j++) {
+					
+					if (i == j) continue;
+					
+					if (i>=plates.size() || j>=plates.size())
+						continue;
+					
+					plateI = plates.get(i).plateCoords;
+					plateJ = plates.get(j).plateCoords;
+					
+					
+					equalPoints=0;
+					for (int n=0;n<4;n++) {
+						pI = new CvPoint(cvGetSeqElem(plateI, n));
+						pJ = new CvPoint(cvGetSeqElem(plateJ, n));
+
+						if ( Math.abs(pI.x() - pJ.x()) < 10 && Math.abs(pI.y() - pJ.y()) < 10) {
+							equalPoints++;
+						}
+					}
+					
+					if (equalPoints == 2) {
+						plates.remove(j);
+						plates.get(i).rating++;
+					}
+			}
+
+		
+		// сортируем по рейтингу
+				Collections.sort(plates, new Comparator<PlateInfo>() {
+					  public int compare(PlateInfo a, PlateInfo b) {						  
+					    return ( ((Integer)b.rating).compareTo(a.rating));
+					  }
+					});
+		return plates;
+	}
+
+
+	/**
 	 * Перебираем найденные многоугольники и пытаемся найти в них номерные знаки
 	 * @param polys
 	 * @param original
+	 * @param mainStorage 
 	 * @return
 	 */
-	private static Vector<PlateInfo> findNumbers(Vector<CvSeq> polys, IplImage original) {
+	private static Vector<PlateInfo> findNumbers(Vector<CvSeq> polys, IplImage original, CvMemStorage mainStorage) {
 		
 		CvRect rect;
 		IplImage tmpImage;
@@ -583,7 +643,7 @@ public class Recognizer {
 			rect=cvBoundingRect(approx, 1);
 			tmpImage = Transform(rect, approx, original, i);
 			//System.out.println("rec="+i);
-	 		recognized = RecognizeNumber(tmpImage, i); 		
+	 		recognized = RecognizeNumber(tmpImage, i, mainStorage); 		
 	 		// Сохраняем информацию о найденном номере
 	 		if (recognized.size() > 0) {
 		 		PlateInfo plate = new PlateInfo();	
@@ -593,8 +653,8 @@ public class Recognizer {
 		 		result.add(plate);
 	 		}
 	 		
-	 		// Для ускорения ограничиваем число найденных планок двумя
-	 		if (result.size() > 2) {
+	 		// Для ускорения ограничиваем число найденных планок
+	 		if (result.size() > 4) {
 	 			break;
 	 		}
 		}
@@ -603,35 +663,36 @@ public class Recognizer {
 	}
 
 
-	private static void optimizeSquares(Vector<CvSeq> plates) {
+	private static void optimizeSquares(Vector<CvSeq> squares) {
 		
 		CvSeq plateI, plateJ;
 		CvPoint pI, pJ;
 		int equalPoints;
 		
 		// sort by rect size
-		Collections.sort(plates, new Comparator() {
-			  public int compare(Object a, Object b) {
-				  CvRect rectA=cvBoundingRect((CvSeq)a, 1);
-				  CvRect rectB=cvBoundingRect((CvSeq)b, 1);
-				  Integer squareA = rectA.width()*rectA.height();
-				  Integer squareB = rectB.width()*rectB.height();
-			    return ( squareA.compareTo(squareB));
+		Collections.sort(squares, new Comparator<CvSeq>() {
+			  public int compare(CvSeq a, CvSeq b) {
+				  CvRect rectA=cvBoundingRect(a, 1);
+				  CvRect rectB=cvBoundingRect(b, 1);
+				  Integer widthA = rectA.width();
+				  Integer widthB = rectB.width();
+			    return ( widthB.compareTo(widthA));
 			  }
 			});
 		
+
 		
-		if (plates.size() > 0)
-		for(int i=0; i<plates.size();i++) 
-			for(int j=0; j<plates.size();j++) {
+		if (squares.size() > 0)
+		for(int i=0; i<squares.size();i++) 
+			for(int j=0; j<squares.size();j++) {
 				
 				if (i == j) continue;
 				
-				if (i>=plates.size() || j>=plates.size())
+				if (i>=squares.size() || j>=squares.size())
 					continue;
 				
-				plateI = plates.get(i);
-				plateJ = plates.get(j);
+				plateI = squares.get(i);
+				plateJ = squares.get(j);
 				
 				
 				equalPoints=0;
@@ -639,13 +700,13 @@ public class Recognizer {
 					pI = new CvPoint(cvGetSeqElem(plateI, n));
 					pJ = new CvPoint(cvGetSeqElem(plateJ, n));
 
-					if ( Math.abs(pI.x() - pJ.x()) < 5 && Math.abs(pI.y() - pJ.y()) < 5) {
+					if ( Math.abs(pI.x() - pJ.x()) < 10 && Math.abs(pI.y() - pJ.y()) < 10) {
 						equalPoints++;
 					}
 				}
 				
 				if (equalPoints == 4) {
-					plates.remove(j);
+					squares.remove(j);
 				}
 		}
 	}

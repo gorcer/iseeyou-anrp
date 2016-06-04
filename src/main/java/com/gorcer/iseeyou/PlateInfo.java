@@ -12,6 +12,7 @@ public class PlateInfo {
 	public String plateImagePath;
 	public CvSeq plateCoords;
 	public Vector<String> numbers;
+	public int rating=0; // рейтинг - как часто в многоугольнике планки встречались номера
 	
 	/**
 	 * Сохраняем изображение и заполняем путь

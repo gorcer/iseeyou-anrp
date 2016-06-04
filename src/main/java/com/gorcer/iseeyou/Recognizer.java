@@ -605,8 +605,8 @@ public class Recognizer {
 					}
 					
 					if (equalPoints == 2) {
-						plates.remove(j);
 						plates.get(i).rating++;
+						plates.remove(j);						
 					}
 			}
 
@@ -654,7 +654,7 @@ public class Recognizer {
 	 		}
 	 		
 	 		// Для ускорения ограничиваем число найденных планок
-	 		if (result.size() > 4) {
+	 		if (result.size() > 5) {
 	 			break;
 	 		}
 		}
